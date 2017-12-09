@@ -40,14 +40,19 @@
   </contributors>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/shared/trunk/maven-verifier</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/shared/trunk/maven-verifier</developerConnection>
-    <url>http://svn.apache.org/viewvc/maven/shared/trunk/maven-verifier</url>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-verifier.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-verifier.git</developerConnection>
+    <url>https://github.com/apache/maven-verifier/tree/${project.scm.tag}</url>
+    <tag>HEAD</tag>
   </scm>
   <issueManagement>
     <system>jira</system>
     <url>https://issues.apache.org/jira/browse/MSHARED/component/12326443</url>
   </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://builds.apache.org/job/maven-box/job/maven-verifier/</url>
+  </ciManagement>
   <distributionManagement>
     <site>
       <id>apache.website</id>
