@@ -1,4 +1,4 @@
-package org.apache.maven.it;
+package org.apache.maven.shared.verifier;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,6 +20,10 @@ package org.apache.maven.it;
  */
 
 import java.util.Arrays;
+
+import org.apache.maven.shared.verifier.ForkedLauncher;
+import org.apache.maven.shared.verifier.VerificationException;
+import org.apache.maven.shared.verifier.Verifier;
 
 import junit.framework.TestCase;
 
