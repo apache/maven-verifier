@@ -141,6 +141,7 @@ public class ResourceExtractor
                         finally
                         {
                             IOUtil.close( fos );
+                            z.close();
                         }
                     }
                 }
@@ -156,6 +157,7 @@ public class ResourceExtractor
             finally
             {
                 IOUtil.close( fos );
+                z.close();
             }
         }
     }

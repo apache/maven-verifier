@@ -26,6 +26,11 @@ package org.apache.maven.shared.verifier;
 public class VerificationException
     extends Exception
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public VerificationException()
     {
     }
