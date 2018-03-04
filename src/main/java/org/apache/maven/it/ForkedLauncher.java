@@ -52,12 +52,12 @@ class ForkedLauncher
 
     private final Map<String, String> envVars;
 
-    public ForkedLauncher( String mavenHome )
+    ForkedLauncher( String mavenHome )
     {
         this( mavenHome, Collections.<String, String>emptyMap(), false );
     }
 
-    public ForkedLauncher( String mavenHome, Map<String, String> envVars, boolean debugJvm )
+    ForkedLauncher( String mavenHome, Map<String, String> envVars, boolean debugJvm )
     {
         this.mavenHome = mavenHome;
         this.envVars = envVars;
