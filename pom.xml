@@ -33,6 +33,9 @@
   <name>Apache Maven Verifier Component</name>
   <description>Provides a test harness for Maven integration tests.</description>
 
+  <properties>
+    <surefire.version>2.21.0</surefire.version>
+  </properties>
   <contributors>
     <contributor>
       <name>Mikolaj Izdebski</name>
