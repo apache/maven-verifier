@@ -19,22 +19,23 @@ package org.apache.maven.shared.verifier;
  * under the License.
  */
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Arrays;
 
 import org.apache.maven.shared.verifier.ForkedLauncher;
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.shared.verifier.Verifier;
-
-import junit.framework.TestCase;
+import org.junit.Test;
 
 public class VerifierTest
-    extends TestCase
 {
     private void check( String expected, String... lines )
     {
         assertEquals( expected, ForkedLauncher.extractMavenVersion( Arrays.asList( lines ) ) );
     }
 
+    @Test
     public void testSunBug9009028ForJdk()
     {
         final String version = System.getProperty( "java.version" );
@@ -42,6 +43,7 @@ public class VerifierTest
         assertEquals( version, System.getProperty( "java.version" ) );
     }
 
+    @Test
     public void testExtractMavenVersion()
     {
         check( "2.0.6", "Maven version: 2.0.6" );
@@ -62,6 +64,7 @@ public class VerifierTest
                "OS name: \"linux\" version: \"3.11.0-13-generic\" arch: \"amd64\" Family: \"unix\"" );
     }
 
+    @Test
     public void testFileInJarPresent()
         throws VerificationException
     {
@@ -71,6 +74,7 @@ public class VerifierTest
         verifier.assertFileNotPresent( "mshared104.jar!/fud.xml" );
     }
 
+    @Test
     public void testStripAnsi()
     {
         assertEquals( "--- plugin:version:goal (id) @ artifactId ---",
