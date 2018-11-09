@@ -23,8 +23,8 @@
   <parent>
     <groupId>org.apache.maven.shared</groupId>
     <artifactId>maven-shared-components</artifactId>
-    <version>32</version>
-    <relativePath>../../pom/maven/maven-shared-components</relativePath>
+    <version>33</version>
+    <relativePath/>
   </parent>
 
   <artifactId>maven-verifier</artifactId>
