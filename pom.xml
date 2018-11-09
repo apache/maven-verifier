@@ -33,6 +33,10 @@
   <name>Apache Maven Verifier Component</name>
   <description>Provides a test harness for Maven integration tests.</description>
 
+  <properties>
+    <javaVersion>7</javaVersion>
+  </properties>
+
   <contributors>
     <contributor>
       <name>Mikolaj Izdebski</name>
