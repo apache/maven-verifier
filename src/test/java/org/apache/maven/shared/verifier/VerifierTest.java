@@ -20,16 +20,20 @@ package org.apache.maven.shared.verifier;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.isA;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 
-import org.apache.maven.shared.verifier.ForkedLauncher;
-import org.apache.maven.shared.verifier.VerificationException;
-import org.apache.maven.shared.verifier.Verifier;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class VerifierTest
 {
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
+
     private void check( String expected, String... lines )
     {
         assertEquals( expected, ForkedLauncher.extractMavenVersion( Arrays.asList( lines ) ) );
@@ -81,4 +85,14 @@ public class VerifierTest
                       Verifier.stripAnsi( "\u001B[1m--- \u001B[0;32mplugin:version:goal\u001B[0;1m (id)\u001B[m @ "
                           + "\u001B[36martifactId\u001B[0;1m ---\u001B[m" ) );
     }
+
+    @Test
+    public void testLoadPropertiesFNFE() throws VerificationException
+    {
+        exception.expectCause( isA( FileNotFoundException.class) );
+
+        Verifier verifier = new Verifier( "src/test/resources" );
+        verifier.loadProperties( "unknown.properties" );
+    }
+
 }

@@ -334,20 +334,10 @@ public class Verifier
     {
         Properties properties = new Properties();
 
-        try
+        File propertiesFile = new File( getBasedir(), filename );
+        try ( FileInputStream fis = new FileInputStream( propertiesFile ) ) 
         {
-            File propertiesFile = new File( getBasedir(), filename );
-            if ( propertiesFile.exists() )
-            {
-                try ( FileInputStream fis = new FileInputStream( propertiesFile ) ) 
-                {
-                    properties.load( fis );
-                }
-            }
-        }
-        catch ( FileNotFoundException e )
-        {
-            throw new VerificationException( "Error reading properties file", e );
+            properties.load( fis );
         }
         catch ( IOException e )
         {
