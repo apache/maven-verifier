@@ -50,8 +50,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import junit.framework.Assert;
-
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.CommandLineUtils;
@@ -59,7 +57,7 @@ import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 import org.apache.maven.shared.utils.cli.WriterStreamConsumer;
 import org.apache.maven.shared.utils.io.FileUtils;
-import org.apache.maven.shared.utils.io.IOUtil;
+import org.junit.Assert;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -341,14 +339,9 @@ public class Verifier
             File propertiesFile = new File( getBasedir(), filename );
             if ( propertiesFile.exists() )
             {
-                FileInputStream fis = new FileInputStream( propertiesFile );
-                try
+                try ( FileInputStream fis = new FileInputStream( propertiesFile ) ) 
                 {
                     properties.load( fis );
-                }
-                finally
-                {
-                    fis.close();
                 }
             }
         }
@@ -379,20 +372,8 @@ public class Verifier
     {
         List<String> lines = new ArrayList<String>();
 
-        File file = new File( getBasedir(), filename );
-
-        BufferedReader reader = null;
-        try
+        try ( BufferedReader reader = getReader( filename, encoding ) )
         {
-            if ( StringUtils.isNotEmpty( encoding ) )
-            {
-                reader = new BufferedReader( new InputStreamReader( new FileInputStream( file ), encoding ) );
-            }
-            else
-            {
-                reader = new BufferedReader( new FileReader( file ) );
-            }
-
             String line;
             while ( ( line = reader.readLine() ) != null )
             {
@@ -402,12 +383,22 @@ public class Verifier
                 }
             }
         }
-        finally
-        {
-            IOUtil.close( reader );
-        }
 
         return lines;
+    }
+
+    private BufferedReader getReader( String filename, String encoding ) throws IOException
+    {
+        File file = new File( getBasedir(), filename );
+
+        if ( StringUtils.isNotEmpty( encoding ) )
+        {
+            return new BufferedReader( new InputStreamReader( new FileInputStream( file ), encoding ) );
+        }
+        else
+        {
+            return new BufferedReader( new FileReader( file ) );
+        }
     }
 
     public List<String> loadFile( String basedir, String filename, boolean hasCommand )
@@ -421,14 +412,10 @@ public class Verifier
     {
         List<String> lines = new ArrayList<String>();
 
-        BufferedReader reader = null;
-
         if ( file.exists() )
         {
-            try
+            try ( BufferedReader reader = new BufferedReader( new FileReader( file ) ) )
             {
-                reader = new BufferedReader( new FileReader( file ) );
-
                 String line = reader.readLine();
 
                 while ( line != null )
@@ -441,8 +428,6 @@ public class Verifier
                     }
                     line = reader.readLine();
                 }
-
-                reader.close();
             }
             catch ( FileNotFoundException e )
             {
@@ -451,10 +436,6 @@ public class Verifier
             catch ( IOException e )
             {
                 throw new VerificationException( e );
-            }
-            finally
-            {
-                IOUtil.close( reader );
             }
         }
 
@@ -798,23 +779,22 @@ public class Verifier
 
             cli.setWorkingDirectory( basedir );
 
-            Writer logWriter = new FileWriter( new File( basedir, LOG_FILENAME ) );
-
-            StreamConsumer out = new WriterStreamConsumer( logWriter );
-
-            StreamConsumer err = new WriterStreamConsumer( logWriter );
-
-            System.out.println( "Command: " + CommandLineUtils.toString( cli.getCommandline() ) );
-
-            int ret = CommandLineUtils.executeCommandLine( cli, out, err );
-
-            logWriter.close();
-
-            if ( ret > 0 )
+            try ( Writer logWriter = new FileWriter( new File( basedir, LOG_FILENAME ) ) ) 
             {
-                System.err.println( "Exit code: " + ret );
+                StreamConsumer out = new WriterStreamConsumer( logWriter );
 
-                throw new VerificationException();
+                StreamConsumer err = new WriterStreamConsumer( logWriter );
+
+                System.out.println( "Command: " + CommandLineUtils.toString( cli.getCommandline() ) );
+
+                int ret = CommandLineUtils.executeCommandLine( cli, out, err );
+
+                if ( ret > 0 )
+                {
+                    System.err.println( "Exit code: " + ret );
+
+                    throw new VerificationException();
+                }
             }
         }
         catch ( CommandLineException e )
@@ -1529,29 +1509,21 @@ public class Verifier
     private void displayLogFile()
     {
         System.out.println( "Log file contents:" );
-        BufferedReader reader = null;
-        try
+
+        try ( BufferedReader reader = 
+                        new BufferedReader( new FileReader( new File( getBasedir(), getLogFileName() ) ) ) )
         {
-            reader = new BufferedReader( new FileReader( new File( getBasedir(), getLogFileName() ) ) );
             String line = reader.readLine();
+            
             while ( line != null )
             {
                 System.out.println( line );
                 line = reader.readLine();
             }
-            reader.close();
-        }
-        catch ( FileNotFoundException e )
-        {
-            System.err.println( "Error: " + e );
         }
         catch ( IOException e )
         {
             System.err.println( "Error: " + e );
-        }
-        finally
-        {
-            IOUtil.close( reader );
         }
     }
 

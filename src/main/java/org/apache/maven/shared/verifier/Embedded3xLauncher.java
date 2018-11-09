@@ -107,27 +107,7 @@ class Embedded3xLauncher
 
             return new Embedded3xLauncher( mavenCli, doMain );
         }
-        catch ( ClassNotFoundException e )
-        {
-            throw new LauncherException( "Invalid Maven home directory " + mavenHome, e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new LauncherException( "Invalid Maven home directory " + mavenHome, e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new LauncherException( "Invalid Maven home directory " + mavenHome, e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new LauncherException( "Invalid Maven home directory " + mavenHome, e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new LauncherException( "Invalid Maven home directory " + mavenHome, e );
-        }
-        catch ( IOException e )
+        catch ( ReflectiveOperationException | IOException e )
         {
             throw new LauncherException( "Invalid Maven home directory " + mavenHome, e );
         }
@@ -157,19 +137,7 @@ class Embedded3xLauncher
 
             return new Embedded3xLauncher( mavenCli, doMain );
         }
-        catch ( ClassNotFoundException e )
-        {
-            throw new LauncherException( e.getMessage(), e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new LauncherException( e.getMessage(), e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new LauncherException( e.getMessage(), e );
-        }
-        catch ( IllegalAccessException e )
+        catch ( ReflectiveOperationException e )
         {
             throw new LauncherException( e.getMessage(), e );
         }
@@ -255,11 +223,7 @@ class Embedded3xLauncher
                 System.setProperties( originalProperties );
             }
         }
-        catch ( IllegalAccessException e )
-        {
-            throw new LauncherException( "Failed to run Maven: " + e.getMessage(), e );
-        }
-        catch ( InvocationTargetException e )
+        catch ( IllegalAccessException | InvocationTargetException e )
         {
             throw new LauncherException( "Failed to run Maven: " + e.getMessage(), e );
         }
