@@ -57,6 +57,12 @@ import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 import org.apache.maven.shared.utils.cli.WriterStreamConsumer;
 import org.apache.maven.shared.utils.io.FileUtils;
+import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.Interpolator;
+import org.codehaus.plexus.interpolation.MapBasedValueSource;
+import org.codehaus.plexus.interpolation.PrefixedValueSourceWrapper;
+import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
+import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.junit.Assert;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -800,36 +806,29 @@ public class Verifier
     private static String retrieveLocalRepo( String settingsXmlPath )
         throws VerificationException
     {
+        File userXml = settingsXmlFile( settingsXmlPath );
+        if ( !userXml.exists() )
+        {
+            return null;
+        }
+
         UserModelReader userModelReader = new UserModelReader();
+        userModelReader.parse( userXml );
+        return userModelReader.getLocalRepository();
+    }
 
-        String userHome = System.getProperty( "user.home" );
-
-        File userXml;
-
-        String repo = null;
-
+    private static File settingsXmlFile( String settingsXmlPath )
+    {
         if ( settingsXmlPath != null )
         {
             System.out.println( "Using settings from " + settingsXmlPath );
-            userXml = new File( settingsXmlPath );
+            return new File( settingsXmlPath );
         }
         else
         {
-            userXml = new File( userHome, ".m2/settings.xml" );
+            String userHome = System.getProperty( "user.home" );
+            return new File( userHome, ".m2/settings.xml" );
         }
-
-        if ( userXml.exists() )
-        {
-            userModelReader.parse( userXml );
-
-            String localRepository = userModelReader.getLocalRepository();
-            if ( localRepository != null )
-            {
-                repo = new File( localRepository ).getAbsolutePath();
-            }
-        }
-
-        return repo;
     }
 
     public void deleteArtifact( String org, String name, String version, String ext )
@@ -1701,10 +1700,10 @@ public class Verifier
 
         if ( localRepo == null )
         {
-            localRepo = System.getProperty( "user.home" ) + "/.m2/repository";
+            localRepo = "${user.home}/.m2/repository";
         }
 
-        File repoDir = new File( localRepo );
+        File repoDir = new File( resolveProperties( localRepo ) );
 
         if ( !repoDir.exists() )
         {
@@ -1716,6 +1715,40 @@ public class Verifier
         localRepo = repoDir.getAbsolutePath();
 
         localRepoLayout = System.getProperty( "maven.repo.local.layout", "default" );
+    }
+
+    private String resolveProperties( String input ) throws VerificationException
+    {
+        String result;
+
+        try
+        {
+            Interpolator interpolator = createInterpolator();
+            result = interpolator.interpolate( input );
+        }
+        catch ( InterpolationException e )
+        {
+            throw new VerificationException( e );
+        }
+
+        if ( result.contains( "${" ) )
+        {
+            throw new VerificationException( "Not all properties resolved: " + result );
+        }
+
+        return result;
+    }
+
+    /**
+     * @see <a href="https://maven.apache.org/settings.html#Properties">Maven settings properties</a>
+     */
+    private Interpolator createInterpolator()
+    {
+        Interpolator interpolator = new StringSearchInterpolator();
+        MapBasedValueSource envValueSource = new MapBasedValueSource( System.getenv() );
+        interpolator.addValueSource( new PrefixedValueSourceWrapper( envValueSource, "env." ) );
+        interpolator.addValueSource( new PropertiesBasedValueSource( System.getProperties() ) );
+        return interpolator;
     }
 
     private static void runIntegrationTest( Verifier verifier )
