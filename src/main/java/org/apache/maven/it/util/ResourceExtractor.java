@@ -1,4 +1,4 @@
-package org.apache.maven.shared.verifier.util;
+package org.apache.maven.it.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

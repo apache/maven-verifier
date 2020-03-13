@@ -1,4 +1,4 @@
-package org.apache.maven.shared.verifier;
+package org.apache.maven.it;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,34 +19,19 @@ package org.apache.maven.shared.verifier;
  * under the License.
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
 /**
- * @author Jason van Zyl
- * @version $Id$
+ * @author Benjamin Bentmann
  */
-public class VerificationException
-    extends Exception
+interface MavenLauncher
 {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
 
-    public VerificationException()
-    {
-    }
+    int run( String[] cliArgs, Properties systemProperties, String workingDirectory, File logFile )
+        throws IOException, LauncherException;
 
-    public VerificationException( String message )
-    {
-        super( message );
-    }
-
-    public VerificationException( Throwable cause )
-    {
-        super( cause );
-    }
-
-    public VerificationException( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
+    String getMavenVersion()
+        throws IOException, LauncherException;
 }
