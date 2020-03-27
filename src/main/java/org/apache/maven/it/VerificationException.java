@@ -21,7 +21,6 @@ package org.apache.maven.it;
 
 /**
  * @author Jason van Zyl
- * @version $Id$
  */
 public class VerificationException
     extends Exception

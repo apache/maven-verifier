@@ -34,6 +34,8 @@ import java.io.PrintStream;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -66,8 +68,6 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * @author Jason van Zyl
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- * @version $Id$
- * @noinspection UseOfSystemOutOrSystemErr, RefusedBequest, UnusedDeclaration
  */
 public class Verifier
 {
@@ -302,7 +302,7 @@ public class Verifier
      * Throws an exception if the text is not present in the log.
      *
      * @param text the text to assert present
-     * @throws VerificationException
+     * @throws VerificationException if text is not found in log
      */
     public void verifyTextInLog( String text )
         throws VerificationException
@@ -959,8 +959,18 @@ public class Verifier
      * There are 226 references to this method in Maven core ITs. In most (all?) cases it is used together with
      * {@link #newDefaultFilterProperties()}. Need to remove both methods and update all clients eventually/
      * 
+     * @param srcPath          The path to the input file, relative to the base directory, must not be
+     *                         <code>null</code>.
+     * @param dstPath          The path to the output file, relative to the base directory and possibly equal to the
+     *                         input file, must not be <code>null</code>.
+     * @param fileEncoding     The file encoding to use, may be <code>null</code> or empty to use the platform's default
+     *                         encoding.
+     * @param filterProperties The mapping from tokens to replacement values, must not be <code>null</code>.
+     * @return The path to the filtered output file, never <code>null</code>.
+     * @throws IOException If the file could not be filtered.
      * @deprecated use {@link #filterFile(String, String, String, Map)}
      */
+    @Deprecated
     @SuppressWarnings( { "rawtypes", "unchecked" } )
     public File filterFile( String srcPath, String dstPath, String fileEncoding, Properties filterProperties )
         throws IOException
@@ -1351,8 +1361,14 @@ public class Verifier
     private MavenLauncher getMavenLauncher( Map<String, String> envVars )
         throws LauncherException
     {
+        boolean useWrapper = Files.exists( Paths.get( getBasedir(), "mvnw" ) );
+        
         boolean fork;
-        if ( forkJvm != null )
+        if ( useWrapper )
+        {
+            fork = true;
+        }
+        else if ( forkJvm != null )
         {
             fork = forkJvm;
         }
@@ -1388,7 +1404,7 @@ public class Verifier
         }
         else
         {
-            return new ForkedLauncher( defaultMavenHome, envVars, debugJvm );
+            return new ForkedLauncher( defaultMavenHome, envVars, debugJvm, useWrapper );
         }
     }
 

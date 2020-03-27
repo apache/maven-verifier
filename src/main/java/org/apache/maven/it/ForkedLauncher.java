@@ -59,18 +59,31 @@ class ForkedLauncher
 
     ForkedLauncher( String mavenHome, Map<String, String> envVars, boolean debugJvm )
     {
+        this( mavenHome, envVars, debugJvm, false );
+    }
+
+    ForkedLauncher( String mavenHome, Map<String, String> envVars, boolean debugJvm, boolean wrapper )
+    {
         this.mavenHome = mavenHome;
         this.envVars = envVars;
 
-        String script = debugJvm ? "mvnDebug" : "mvn";
-
-        if ( mavenHome != null )
+        if ( wrapper )
         {
-            executable = new File( mavenHome, "bin/" + script ).getPath();
+            String script = "mvnw" + ( debugJvm ? "Debug" : "" );
+            executable = new File( script ).getPath();
         }
         else
         {
-            executable = script;
+            String script = "mvn" + ( debugJvm ? "Debug" : "" );
+
+            if ( mavenHome != null )
+            {
+                executable = new File( mavenHome, "bin/" + script ).getPath();
+            }
+            else
+            {
+                executable = script;
+            }
         }
     }
 
