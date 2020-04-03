@@ -93,11 +93,11 @@ class Embedded3xLauncher
 
             configure.invoke( launcher, new Object[] { new FileInputStream( config ) } );
 
-            Method getWorld = launcherClass.getMethod( "getWorld", (Class<?>) null );
-            Object classWorld = getWorld.invoke( launcher, (Class<?>) null );
+            Method getWorld = launcherClass.getMethod( "getWorld" );
+            Object classWorld = getWorld.invoke( launcher );
 
-            Method getMainClass = launcherClass.getMethod( "getMainClass", (Class<?>) null );
-            Class<?> cliClass = (Class<?>) getMainClass.invoke( launcher, (Class<?>) null );
+            Method getMainClass = launcherClass.getMethod( "getMainClass" );
+            Class<?> cliClass = (Class<?>) getMainClass.invoke( launcher );
 
             Constructor<?> newMavenCli = cliClass.getConstructor( new Class[] { classWorld.getClass() } );
             Object mavenCli = newMavenCli.newInstance( new Object[] { classWorld } );
@@ -109,7 +109,7 @@ class Embedded3xLauncher
         }
         catch ( ReflectiveOperationException | IOException e )
         {
-            throw new LauncherException( "Invalid Maven home directory " + mavenHome, e );
+            throw new LauncherException( "Failed to initialize Laucher", e );
         }
         finally
         {
