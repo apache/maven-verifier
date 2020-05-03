@@ -26,6 +26,7 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -69,8 +70,20 @@ class ForkedLauncher
 
         if ( wrapper )
         {
-            String script = "mvnw" + ( debugJvm ? "Debug" : "" );
-            executable = new File( script ).getPath();
+            final StringBuilder script = new StringBuilder();
+            
+            if ( !isWindows() )
+            {
+                script.append( "./" );
+            }
+            
+            script.append( "mvnw" );
+            
+            if ( debugJvm )
+            {
+                script.append( "Debug" );
+            }
+            executable = script.toString();
         }
         else
         {
@@ -207,6 +220,13 @@ class ForkedLauncher
         }
 
         return version;
+    }
+    
+    private static boolean isWindows()
+    {
+        String osName = System.getProperty( "os.name" ).toLowerCase( Locale.US );
+
+        return ( osName.indexOf( "windows" ) > -1 );
     }
 
 }
