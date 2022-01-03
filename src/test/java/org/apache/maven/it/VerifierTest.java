@@ -22,17 +22,25 @@ package org.apache.maven.it;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.isA;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 
 public class VerifierTest
 {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private void check( String expected, String... lines )
     {
@@ -93,6 +101,16 @@ public class VerifierTest
 
         Verifier verifier = new Verifier( "src/test/resources" );
         verifier.loadProperties( "unknown.properties" );
+    }
+
+    @Test
+    public void testDedicatedMavenHome() throws VerificationException, IOException, URISyntaxException 
+    {
+        String mavenHome  = Paths.get( "src/test/resources/maven-home" ).toAbsolutePath().toString();;
+        Verifier verifier = new Verifier( temporaryFolder.getRoot().toString(), null, false, mavenHome );
+        verifier.executeGoal( "some-goal" );
+        File logFile = new File( verifier.getBasedir(), verifier.getLogFileName() );
+        ForkedLauncherTest.expectFileLine( logFile, "Hello World from Maven Home" );
     }
 
 }

@@ -74,8 +74,8 @@ public class ForkedLauncherTest
 
         assertThat( "exit code", exitCode , is ( 0 ) );
     }
-    
-    private void expectFileLine( File file, String expectedline ) throws IOException
+
+    static void expectFileLine( File file, String expectedline ) throws IOException
     {
         try ( FileReader fr = new FileReader( file );
               BufferedReader br = new BufferedReader( fr ) )

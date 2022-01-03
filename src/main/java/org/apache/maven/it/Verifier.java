@@ -103,22 +103,31 @@ public class Verifier
 
     private boolean debug;
 
+    /** 
+     * If {@code true} uses {@link ForkedLauncher}, if {@code false} uses {@link Embedded3xLauncher},
+     * otherwise considers the value {@link #forkMode}.
+     */
     private Boolean forkJvm;
 
     private String logFileName = LOG_FILENAME;
 
-    private String defaultMavenHome;
-
-    private String defaultClassworldConf;
-
-    private String defaultClasspath;
+    private String mavenHome;
 
     // will launch mvn with --debug 
     private boolean mavenDebug = false;
 
+    /**
+     * Either "auto" (use {@link ForkedLauncher} when {@link #environmentVariables} is not empty,
+     * otherwise use {@link Embedded3xLauncher}) , "embedder" (always use {@link Embedded3xLauncher})
+     * or something else (always use {@link ForkedLauncher}).
+     * Set through system property {@code verifier.forkMode}.
+     * Only relevant if {@link #forkJvm} is {@code null}.
+     */
     private String forkMode;
 
     private boolean debugJvm = false;
+
+    private boolean useWrapper;
 
     private static MavenLauncher embeddedLauncher;
 
@@ -161,11 +170,23 @@ public class Verifier
     public Verifier( String basedir, String settingsFile, boolean debug, boolean forkJvm, String[] defaultCliOptions )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, (Boolean) forkJvm, defaultCliOptions );
+        this( basedir, settingsFile, debug, forkJvm, defaultCliOptions, null );
     }
 
-    private Verifier( String basedir, String settingsFile, boolean debug, Boolean forkJvm, String[] defaultCliOptions )
+    public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome ) 
+            throws VerificationException
+    {
+        this( basedir, settingsFile, debug, null, DEFAULT_CLI_OPTIONS, mavenHome );
+    }
+
+    public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome, String[] defaultCliOptions ) 
         throws VerificationException
+    {
+        this( basedir, settingsFile, debug, null, defaultCliOptions, mavenHome );
+    }
+
+    private Verifier( String basedir, String settingsFile, boolean debug, Boolean forkJvm, String[] defaultCliOptions,
+            String mavenHome ) throws VerificationException
     {
         this.basedir = basedir;
 
@@ -182,9 +203,18 @@ public class Verifier
         setDebug( debug );
 
         findLocalRepo( settingsFile );
-        findDefaultMavenHome();
+        if ( mavenHome == null )
+        {
+            this.mavenHome = getDefaultMavenHome();
+            useWrapper = Files.exists( Paths.get( getBasedir(), "mvnw" ) );
+        }
+        else
+        {
+            this.mavenHome = mavenHome;
+            useWrapper = false;
+        }
 
-        if ( StringUtils.isEmpty( defaultMavenHome ) && StringUtils.isEmpty( forkMode ) )
+        if ( StringUtils.isEmpty( mavenHome ) && StringUtils.isEmpty( forkMode ) )
         {
             forkMode = "auto";
         }
@@ -192,12 +222,9 @@ public class Verifier
         this.defaultCliOptions = defaultCliOptions == null ? new String[0] : defaultCliOptions.clone();
     }
 
-    private void findDefaultMavenHome()
-        throws VerificationException
+    private static String getDefaultMavenHome()
     {
-        defaultClasspath = System.getProperty( "maven.bootclasspath" );
-        defaultClassworldConf = System.getProperty( "classworlds.conf" );
-        defaultMavenHome = System.getProperty( "maven.home" );
+        String defaultMavenHome = System.getProperty( "maven.home" );
 
         if ( defaultMavenHome == null )
         {
@@ -213,6 +240,7 @@ public class Verifier
                 defaultMavenHome = f.getAbsolutePath();
             }
         }
+        return defaultMavenHome;
     }
 
     public void setLocalRepo( String localRepo )
@@ -1250,8 +1278,6 @@ public class Verifier
         // Use a strategy for finding the maven executable, John has a simple method like this
         // but a little strategy + chain of command would be nicer.
 
-        String mavenHome = defaultMavenHome;
-
         if ( mavenHome != null )
         {
             return mavenHome + "/bin/mvn";
@@ -1352,7 +1378,7 @@ public class Verifier
             System.err.println( "Exit code: " + ret );
 
             throw new VerificationException(
-                "Exit code was non-zero: " + ret + "; command line and log = \n" + new File( defaultMavenHome,
+                "Exit code was non-zero: " + ret + "; command line and log = \n" + new File( mavenHome,
                                                                                              "bin/mvn" ) + " "
                     + StringUtils.join( args.iterator(), " " ) + "\n" + getLogContents( logFile ) );
         }
@@ -1361,8 +1387,6 @@ public class Verifier
     private MavenLauncher getMavenLauncher( Map<String, String> envVars )
         throws LauncherException
     {
-        boolean useWrapper = Files.exists( Paths.get( getBasedir(), "mvnw" ) );
-        
         boolean fork;
         if ( useWrapper )
         {
@@ -1404,7 +1428,7 @@ public class Verifier
         }
         else
         {
-            return new ForkedLauncher( defaultMavenHome, envVars, debugJvm, useWrapper );
+            return new ForkedLauncher( mavenHome, envVars, debugJvm, useWrapper );
         }
     }
 
@@ -1413,39 +1437,41 @@ public class Verifier
     {
         if ( embeddedLauncher == null )
         {
-            if ( StringUtils.isEmpty( defaultMavenHome ) )
+            if ( StringUtils.isEmpty( mavenHome ) )
             {
                 embeddedLauncher = Embedded3xLauncher.createFromClasspath();
             }
             else
             {
-                embeddedLauncher =
-                    Embedded3xLauncher.createFromMavenHome( defaultMavenHome, defaultClassworldConf, getClasspath() );
+                String defaultClasspath = System.getProperty( "maven.bootclasspath" );
+                String defaultClassworldConf = System.getProperty( "classworlds.conf" );
+                embeddedLauncher = Embedded3xLauncher.createFromMavenHome( mavenHome, defaultClassworldConf, 
+                        parseClasspath( defaultClasspath ) );
             }
         }
     }
 
-    private List<URL> getClasspath()
+    private static List<URL> parseClasspath( String classpath )
         throws LauncherException
     {
-        if ( defaultClasspath == null )
+        if ( classpath == null )
         {
             return null;
         }
-        ArrayList<URL> classpath = new ArrayList<URL>();
-        StringTokenizer st = new StringTokenizer( defaultClasspath, File.pathSeparator );
+        ArrayList<URL> classpathUrls = new ArrayList<URL>();
+        StringTokenizer st = new StringTokenizer( classpath, File.pathSeparator );
         while ( st.hasMoreTokens() )
         {
             try
             {
-                classpath.add( new File( st.nextToken() ).toURI().toURL() );
+                classpathUrls.add( new File( st.nextToken() ).toURI().toURL() );
             }
             catch ( MalformedURLException e )
             {
-                throw new LauncherException( "Invalid launcher classpath " + defaultClasspath, e );
+                throw new LauncherException( "Invalid launcher classpath " + classpath, e );
             }
         }
-        return classpath;
+        return classpathUrls;
     }
 
     public String getMavenVersion()
