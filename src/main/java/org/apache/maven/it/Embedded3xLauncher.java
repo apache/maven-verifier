@@ -196,10 +196,13 @@ class Embedded3xLauncher
         PrintStream out = ( logFile != null ) ? new PrintStream( new FileOutputStream( logFile ) ) : System.out;
         try
         {
+            File workingDirectoryPath = new File( workingDirectory );
             Properties originalProperties = System.getProperties();
             System.setProperties( null );
             System.setProperty( "maven.home", originalProperties.getProperty( "maven.home", "" ) );
-            System.setProperty( "user.dir", new File( workingDirectory ).getAbsolutePath() );
+            System.setProperty( "user.dir", workingDirectoryPath.getAbsolutePath() );
+            System.setProperty( "maven.multiModuleProjectDirectory", 
+                    findProjectBaseDirectory( workingDirectoryPath ).getAbsolutePath() );
 
             for ( Object o : systemProperties.keySet() )
             {
@@ -268,4 +271,26 @@ class Embedded3xLauncher
         throw new LauncherException( "Could not determine embedded Maven version" );
     }
 
+    /**
+     * Replicates the logic from <a href="https://git.io/JSMug">Maven start script</a> to find 
+     * the project's base directory.
+     * @param workingDirectory the working directory
+     * @return the project's base directory
+     */
+    private static File findProjectBaseDirectory( File workingDirectory )
+    {
+        File currentDirectory = workingDirectory;
+        // traverses directory structure from process work directory to filesystem root
+        // first directory with .mvn subdirectory is considered project base directory
+        while ( currentDirectory != null && currentDirectory.getParentFile() != null )
+        {
+            // see if /.mvn exists
+            if ( new File( currentDirectory, ".mvn" ).isDirectory() )
+            {
+                return currentDirectory;
+            }
+            currentDirectory = currentDirectory.getParentFile();
+        }
+        return workingDirectory;
+    }
 }

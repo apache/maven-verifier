@@ -58,7 +58,7 @@ public class ForkedLauncherTest
         // most likely this contains the exception in case exitCode != 0
         expectFileLine( logFile, "Hello World" );
 
-        assertThat( "exit code", exitCode , is ( 0 ) );
+        assertThat( "exit code", exitCode, is ( 0 ) );
     }
 
     @Test
