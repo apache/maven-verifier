@@ -551,16 +551,16 @@ public class Verifier
             a[i] = tok.nextToken();
         }
 
-        String org = a[0];
-        String name = a[1];
+        String groupId = a[0];
+        String artifactId = a[1];
         String version = a[2];
         String ext = a[3];
-        return getArtifactPath( org, name, version, ext );
+        return getArtifactPath( groupId, artifactId, version, ext );
     }
 
-    public String getArtifactPath( String org, String name, String version, String ext )
+    public String getArtifactPath( String groupId, String artifactId, String version, String ext )
     {
-        return getArtifactPath( org, name, version, ext, null );
+        return getArtifactPath( groupId, artifactId, version, ext, null );
     }
 
     /**
@@ -1035,11 +1035,28 @@ public class Verifier
         return filterProperties;
     }
 
+    /**
+     * Verifies that the given file exists.
+     * 
+     * @param file the path of the file to check
+     * @throws VerificationException in case the given file does not exist
+     */
+    public void verifyFilePresent( String file ) throws VerificationException
+    {
+        verifyFilePresence( file, true );
+    }
+
+    /**
+     * 
+     * @param file the path of the file to check
+     * @deprecated Use {@link #verifyFilePresent(String)} instead.
+     */
+    @Deprecated
     public void assertFilePresent( String file )
     {
         try
         {
-            verifyExpectedResult( file, true );
+            verifyFilePresent( file );
         }
         catch ( VerificationException e )
         {
@@ -1048,35 +1065,46 @@ public class Verifier
     }
 
     /**
-     * Check that given file's content matches an regular expression. Note this method also checks that the file exists
-     * and is readable.
+     * Verifies the given file's content matches an regular expression. 
+     * Note this method also checks that the file exists and is readable.
      *
-     * @param file  the file to check.
-     * @param regex a regular expression.
+     * @param file the path of the file to check
+     * @param regex a regular expression
+     * @throws VerificationException in case the file was not found or its content does not match the given pattern
      * @see Pattern
      */
-    public void assertFileMatches( String file, String regex )
+    public void verifyFileContentMatches( String file, String regex ) throws VerificationException
     {
-        assertFilePresent( file );
+        verifyFilePresent( file );
         try
         {
             String content = FileUtils.fileRead( file );
             if ( !Pattern.matches( regex, content ) )
             {
-                Assert.fail( "Content of " + file + " does not match " + regex );
+                throw new VerificationException( "Content of " + file + " does not match " + regex );
             }
         }
         catch ( IOException e )
         {
-            Assert.fail( e.getMessage() );
+            throw new VerificationException( "Could not read from " + file + ": " + e.getMessage(), e );
         }
     }
 
-    public void assertFileNotPresent( String file )
+    /**
+     * Check the given file's content matches a regular expression. Note this method also checks that the file exists
+     * and is readable.
+     *
+     * @param file the path of the file to check
+     * @param regex a regular expression that the file's contents should match
+     * @see Pattern
+     * @deprecated Use {@link #verifyFileContentMatches(String, String)} instead.
+     */
+    @Deprecated
+    public void assertFileMatches( String file, String regex )
     {
         try
         {
-            verifyExpectedResult( file, false );
+            verifyFileContentMatches( file, regex );
         }
         catch ( VerificationException e )
         {
@@ -1084,30 +1112,103 @@ public class Verifier
         }
     }
 
-    private void verifyArtifactPresence( boolean wanted, String org, String name, String version, String ext )
+    /**
+     * Verifies that the given file does not exist.
+     * 
+     * @param file the path of the file to check
+     * @throws VerificationException if the given file exists
+     */
+    public void verifyFileNotPresent( String file ) throws VerificationException
     {
-        List<String> files = getArtifactFileNameList( org, name, version, ext );
-        for ( String fileName : files )
+        verifyFilePresence( file, false );
+    }
+
+    /**
+     * 
+     * @param file the path of the file to check
+     * @deprecated Use {@link #verifyFileNotPresent(String)} instead.
+     */
+    @Deprecated
+    public void assertFileNotPresent( String file )
+    {
+        try
         {
-            try
-            {
-                verifyExpectedResult( fileName, wanted );
-            }
-            catch ( VerificationException e )
-            {
-                Assert.fail( e.getMessage() );
-            }
+            verifyFileNotPresent( file );
+        }
+        catch ( VerificationException e )
+        {
+            Assert.fail( e.getMessage() );
         }
     }
 
-    public void assertArtifactPresent( String org, String name, String version, String ext )
+    private void verifyArtifactPresence( boolean wanted, String groupId, String artifactId, String version, String ext )
+                    throws VerificationException
     {
-        verifyArtifactPresence( true, org, name, version, ext );
+        List<String> files = getArtifactFileNameList( groupId, artifactId, version, ext );
+        for ( String fileName : files )
+        {
+            verifyFilePresence( fileName, wanted );
+        }
     }
 
+    /**
+     * Verifies that the artifact given through its Maven coordinates exists.
+     * 
+     * @param groupId the groupId of the artifact (must not be null)
+     * @param artifactId the artifactId of the artifact (must not be null)
+     * @param version the version of the artifact (must not be null)
+     * @param ext the extension of the artifact (must not be null)
+     * @throws VerificationException if the given artifact does not exist
+     */
+    public void verifyArtifactPresent( String groupId, String artifactId, String version, String ext )
+                    throws VerificationException
+    {
+        verifyArtifactPresence( true, groupId, artifactId, version, ext );
+    }
+
+    /**
+     * Verifies that the artifact given through its Maven coordinates does not exist.
+     * 
+     * @param groupId the groupId of the artifact (must not be null)
+     * @param artifactId the artifactId of the artifact (must not be null)
+     * @param version the version of the artifact (must not be null)
+     * @param ext the extension of the artifact (must not be null)
+     * @throws VerificationException if the given artifact exists
+     */
+    public void verifyArtifactNotPresent( String groupId, String artifactId, String version, String ext )
+                    throws VerificationException
+    {
+        verifyArtifactPresence( false, groupId, artifactId, version, ext );
+    }
+
+    private void assertArtifactPresence( boolean wanted, String org, String name, String version, String ext )
+    {
+        try
+        {
+            verifyArtifactPresence( wanted, org, name, version, ext );
+        }
+        catch ( VerificationException e )
+        {
+            Assert.fail( e.getMessage() );
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #verifyArtifactPresent(String, String, String, String)} instead.
+     */
+    @Deprecated
+    public void assertArtifactPresent( String org, String name, String version, String ext )
+    {
+        assertArtifactPresence( true, org, name, version, ext );
+    }
+
+    /**
+     * @deprecated Use {@link #verifyArtifactNotPresent(String, String, String, String)} instead.
+     */
+    @Deprecated
     public void assertArtifactNotPresent( String org, String name, String version, String ext )
     {
-        verifyArtifactPresence( false, org, name, version, ext );
+        assertArtifactPresence( false, org, name, version, ext );
     }
 
     private void verifyExpectedResult( String line )
@@ -1120,15 +1221,15 @@ public class Verifier
             wanted = false;
         }
 
-        verifyExpectedResult( line, wanted );
+        verifyFilePresence( line, wanted );
     }
 
-    private void verifyExpectedResult( String line, boolean wanted )
+    private void verifyFilePresence( String filePath, boolean wanted )
         throws VerificationException
     {
-        if ( line.indexOf( "!/" ) > 0 )
+        if ( filePath.indexOf( "!/" ) > 0 )
         {
-            String urlString = "jar:file:" + getBasedir() + "/" + line;
+            String urlString = "jar:file:" + getBasedir() + "/" + filePath;
 
             InputStream is = null;
             try
@@ -1141,14 +1242,14 @@ public class Verifier
                 {
                     if ( wanted )
                     {
-                        throw new VerificationException( "Expected JAR resource was not found: " + line );
+                        throw new VerificationException( "Expected JAR resource was not found: " + filePath );
                     }
                 }
                 else
                 {
                     if ( !wanted )
                     {
-                        throw new VerificationException( "Unwanted JAR resource was found: " + line );
+                        throw new VerificationException( "Unwanted JAR resource was found: " + filePath );
                     }
                 }
             }
@@ -1160,7 +1261,7 @@ public class Verifier
             {
                 if ( wanted )
                 {
-                    throw new VerificationException( "Error looking for JAR resource: " + line );
+                    throw new VerificationException( "Error looking for JAR resource: " + filePath );
                 }
             }
             finally
@@ -1180,15 +1281,15 @@ public class Verifier
         }
         else
         {
-            File expectedFile = new File( line );
+            File expectedFile = new File( filePath );
 
             // NOTE: On Windows, a path with a leading (back-)slash is relative to the current drive
             if ( !expectedFile.isAbsolute() && !expectedFile.getPath().startsWith( File.separator ) )
             {
-                expectedFile = new File( getBasedir(), line );
+                expectedFile = new File( getBasedir(), filePath );
             }
 
-            if ( line.indexOf( '*' ) > -1 )
+            if ( filePath.indexOf( '*' ) > -1 )
             {
                 File parent = expectedFile.getParentFile();
 
@@ -1794,6 +1895,31 @@ public class Verifier
         System.out.println( "OK" );
     }
 
+    /**
+     * Verifies that the artifact given by its Maven coordinates exists and contains the given content.
+     * 
+     * @param groupId the groupId of the artifact (must not be null)
+     * @param artifactId the artifactId of the artifact (must not be null)
+     * @param version the version of the artifact (must not be null)
+     * @param ext the extension of the artifact (must not be null)
+     * @param content the expected content
+     * @throws IOException if reading from the artifact fails 
+     * @throws VerificationException if the content of the artifact differs
+     */
+    public void verifyArtifactContent( String groupId, String artifactId, String version, String ext, String content )
+        throws IOException, VerificationException
+    {
+        String fileName = getArtifactPath( groupId, artifactId, version, ext );
+        if ( content.equals( FileUtils.fileRead( fileName ) ) )
+        {
+            throw new VerificationException( "Content of " + fileName + " does not equal " + content );
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #verifyArtifactContent(String, String, String, String, String)} instead.
+     */
+    @Deprecated
     public void assertArtifactContents( String org, String artifact, String version, String type, String contents )
         throws IOException
     {
