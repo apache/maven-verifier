@@ -51,8 +51,8 @@
     <tag>HEAD</tag>
   </scm>
   <issueManagement>
-    <system>jira</system>
-    <url>https://issues.apache.org/jira/browse/MSHARED/component/12326443</url>
+    <system>Jira</system>
+    <url>https://issues.apache.org/jira/issues/?jql=project+%3D+MSHARED+AND+component+%3D+maven-verifier</url>
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>
