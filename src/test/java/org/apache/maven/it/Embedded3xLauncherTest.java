@@ -35,9 +35,9 @@ public class Embedded3xLauncherTest
 {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
-    
+
     private Embedded3xLauncher launcher;
-    
+
     private final String workingDir = Paths.get( "src/test/resources" ).toAbsolutePath().toString();
 
     @Test
@@ -46,10 +46,9 @@ public class Embedded3xLauncherTest
         launcher = Embedded3xLauncher.createFromClasspath();
         File logFile = temporaryFolder.newFile( "build.log" );
 
-        int exitCode = launcher.run( new String[]{ "clean" }, new Properties(), workingDir, logFile );
+        int exitCode = launcher.run( new String[] {"clean"}, new Properties(), workingDir, logFile );
 
         assertThat( "exit code unexpected, build log: " + System.lineSeparator() +
-                String.join(System.lineSeparator(), Files.readAllLines( logFile.toPath() ) ), exitCode, is ( 0 ) );
+                        new String( Files.readAllBytes( logFile.toPath() ) ), exitCode, is( 0 ) );
     }
-
 }
