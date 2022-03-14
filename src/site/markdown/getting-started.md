@@ -63,9 +63,35 @@ The following mechanism determines the binary which is used for executing Maven.
 
 Whether the embedded or the forked launcher are used depends on the field `forkJvm` set through the constructor or `setForkJvm` or as fallback on the value of system property `verifier.forkMode`.
 
+### Determining Maven Home Directory
+
+The following directories are considered as potential Maven home directory (relevant for both forked launcher and embedded launcher with  [Plexus Classworlds Loader][plexus-classwords]). The first existing directory from the list is used.
+
+1. Maven Home path given in the constructor
+2. System property `maven.home`
+3. Environment variable `M2_HOME`
+4. System property `user.home` suffixed with `/m2` (only considered if it contains `bin/mvn`)
+
+### Setting Maven Home for Embedded Launcher
+
+In order to pass `Maven Home` used for executing project itself to tests execution, `maven-surefire` can be configured like:
+
+```
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+      <systemPropertyVariables>
+        <maven.home>${maven.home}</maven.home>
+      </systemPropertyVariables>
+    </configuration>
+  </plugin>
+```
+
 ### Class Path For Embedded Launcher
 
-To use the embedded launcher it is important that some artifacts are in the class path. For the Context Class Loader case this would mean the following dependencies are needed at least (for Maven 3.8.4):
+In case when `Maven Home Directory` can not be determined, to use the embedded launcher it is important that some artifacts are in the class path. 
+For the Context Class Loader case this would mean the following dependencies are needed at least (for Maven 3.8.4):
 
 ```
 <!-- embedder for testing Embedded3xLauncher with classpath -->
@@ -102,15 +128,6 @@ To use the embedded launcher it is important that some artifacts are in the clas
   <scope>test</scope>
 </dependency>
 ```
-
-### Determining Maven Home Directory
-
-The following directories are considered as potential Maven home directory (relevant for both forked launcher and embedded launcher with  [Plexus Classworlds Loader][plexus-classwords]). The first existing directory from the list is used. 
-
-1. Maven Home path given in the constructor
-2. System property `maven.home`
-3. Environment variable `M2_HOME`
-4. System property `user.home` suffixed with `/m2` (only considered if it contains `bin/mvn`)
 
 ## Run
 
