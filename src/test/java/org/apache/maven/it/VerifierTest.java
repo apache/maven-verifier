@@ -19,20 +19,20 @@ package org.apache.maven.it;
  * under the License.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.CoreMatchers.isA;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Properties;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+
+import static org.hamcrest.CoreMatchers.isA;
+import static org.junit.Assert.assertEquals;
 
 public class VerifierTest
 {
@@ -50,9 +50,17 @@ public class VerifierTest
     @Test
     public void testSunBug9009028ForJdk()
     {
-        final String version = System.getProperty( "java.version" );
-        System.setProperties( null );
-        assertEquals( version, System.getProperty( "java.version" ) );
+        Properties oldProperties = System.getProperties();
+        try
+        {
+            final String version = System.getProperty( "java.version" );
+            System.setProperties( null );
+            assertEquals( version, System.getProperty( "java.version" ) );
+        }
+        finally
+        {
+            System.setProperties( oldProperties );
+        }
     }
 
     @Test
@@ -91,22 +99,22 @@ public class VerifierTest
     {
         assertEquals( "--- plugin:version:goal (id) @ artifactId ---",
                       Verifier.stripAnsi( "\u001B[1m--- \u001B[0;32mplugin:version:goal\u001B[0;1m (id)\u001B[m @ "
-                          + "\u001B[36martifactId\u001B[0;1m ---\u001B[m" ) );
+                                              + "\u001B[36martifactId\u001B[0;1m ---\u001B[m" ) );
     }
 
     @Test
     public void testLoadPropertiesFNFE() throws VerificationException
     {
-        exception.expectCause( isA( FileNotFoundException.class) );
+        exception.expectCause( isA( FileNotFoundException.class ) );
 
         Verifier verifier = new Verifier( "src/test/resources" );
         verifier.loadProperties( "unknown.properties" );
     }
 
     @Test
-    public void testDedicatedMavenHome() throws VerificationException, IOException, URISyntaxException 
+    public void testDedicatedMavenHome() throws VerificationException, IOException
     {
-        String mavenHome  = Paths.get( "src/test/resources/maven-home" ).toAbsolutePath().toString();;
+        String mavenHome = Paths.get( "src/test/resources/maven-home" ).toAbsolutePath().toString();
         Verifier verifier = new Verifier( temporaryFolder.getRoot().toString(), null, false, mavenHome );
         verifier.executeGoal( "some-goal" );
         File logFile = new File( verifier.getBasedir(), verifier.getLogFileName() );

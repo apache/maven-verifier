@@ -19,9 +19,6 @@ package org.apache.maven.it;
  * under the License.
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -31,19 +28,34 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 public class Embedded3xLauncherTest
 {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private Embedded3xLauncher launcher;
 
     private final String workingDir = Paths.get( "src/test/resources" ).toAbsolutePath().toString();
 
     @Test
     public void testWithClasspath() throws Exception
     {
-        launcher = Embedded3xLauncher.createFromClasspath();
+        MavenLauncher launcher = Embedded3xLauncher.createFromClasspath();
+        runLauncher( launcher );
+    }
+
+    @Test
+    public void testWithMavenHome() throws Exception
+    {
+        MavenLauncher launcher = Embedded3xLauncher.createFromMavenHome(
+            System.getProperty( "maven.home" ), null, null );
+        runLauncher( launcher );
+    }
+
+    private void runLauncher( MavenLauncher launcher ) throws Exception
+    {
         File logFile = temporaryFolder.newFile( "build.log" );
 
         int exitCode = launcher.run( new String[] {"clean"}, new Properties(), workingDir, logFile );
