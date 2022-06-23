@@ -19,28 +19,24 @@ package org.apache.maven.it;
  * under the License.
  */
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import static org.hamcrest.CoreMatchers.isA;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class VerifierTest
 {
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public Path temporaryFolder;
 
     private void check( String expected, String... lines )
     {
@@ -105,19 +101,20 @@ public class VerifierTest
     @Test
     public void testLoadPropertiesFNFE() throws VerificationException
     {
-        exception.expectCause( isA( FileNotFoundException.class ) );
-
-        Verifier verifier = new Verifier( "src/test/resources" );
-        verifier.loadProperties( "unknown.properties" );
+        VerificationException exception = assertThrows( VerificationException.class, () -> {
+            Verifier verifier = new Verifier( "src/test/resources" );
+            verifier.loadProperties( "unknown.properties" );
+        } );
+        assertInstanceOf( FileNotFoundException.class, exception.getCause() );
     }
 
     @Test
     public void testDedicatedMavenHome() throws VerificationException, IOException
     {
         String mavenHome = Paths.get( "src/test/resources/maven-home" ).toAbsolutePath().toString();
-        Verifier verifier = new Verifier( temporaryFolder.getRoot().toString(), null, false, mavenHome );
+        Verifier verifier = new Verifier( temporaryFolder.toString(), null, false, mavenHome );
         verifier.executeGoal( "some-goal" );
-        File logFile = new File( verifier.getBasedir(), verifier.getLogFileName() );
+        Path logFile = Paths.get( verifier.getBasedir(), verifier.getLogFileName() );
         ForkedLauncherTest.expectFileLine( logFile, "Hello World from Maven Home" );
     }
 

@@ -59,7 +59,7 @@ import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 import org.apache.maven.shared.utils.cli.WriterStreamConsumer;
 import org.apache.maven.shared.utils.io.FileUtils;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -1060,7 +1060,7 @@ public class Verifier
         }
         catch ( VerificationException e )
         {
-            Assert.fail( e.getMessage() );
+            Assertions.fail( e.getMessage() );
         }
     }
 
@@ -1108,7 +1108,7 @@ public class Verifier
         }
         catch ( VerificationException e )
         {
-            Assert.fail( e.getMessage() );
+            Assertions.fail( e.getMessage() );
         }
     }
 
@@ -1137,7 +1137,7 @@ public class Verifier
         }
         catch ( VerificationException e )
         {
-            Assert.fail( e.getMessage() );
+            Assertions.fail( e.getMessage() );
         }
     }
 
@@ -1189,7 +1189,7 @@ public class Verifier
         }
         catch ( VerificationException e )
         {
-            Assert.fail( e.getMessage() );
+            Assertions.fail( e.getMessage() );
         }
     }
 
@@ -1924,7 +1924,7 @@ public class Verifier
         throws IOException
     {
         String fileName = getArtifactPath( org, artifact, version, type );
-        Assert.assertEquals( contents, FileUtils.fileRead( fileName ) );
+        Assertions.assertEquals( contents, FileUtils.fileRead( fileName ) );
     }
 
     static class UserModelReader
