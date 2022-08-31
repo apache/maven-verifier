@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class VerifierTest
 {
     @TempDir
-    public Path temporaryFolder;
+    public Path temporaryDir;
 
     private void check( String expected, String... lines )
     {
@@ -112,7 +112,7 @@ public class VerifierTest
     public void testDedicatedMavenHome() throws VerificationException, IOException
     {
         String mavenHome = Paths.get( "src/test/resources/maven-home" ).toAbsolutePath().toString();
-        Verifier verifier = new Verifier( temporaryFolder.toString(), null, false, mavenHome );
+        Verifier verifier = new Verifier( temporaryDir.toString(), null, false, mavenHome );
         verifier.executeGoal( "some-goal" );
         Path logFile = Paths.get( verifier.getBasedir(), verifier.getLogFileName() );
         ForkedLauncherTest.expectFileLine( logFile, "Hello World from Maven Home" );

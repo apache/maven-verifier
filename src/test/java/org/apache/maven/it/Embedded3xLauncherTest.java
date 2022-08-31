@@ -34,7 +34,7 @@ import static org.hamcrest.Matchers.is;
 public class Embedded3xLauncherTest
 {
     @TempDir
-    public Path temporaryFolder;
+    public Path temporaryDir;
 
 
     private final String workingDir = Paths.get( "src/test/resources" ).toAbsolutePath().toString();
@@ -56,7 +56,7 @@ public class Embedded3xLauncherTest
 
     private void runLauncher( MavenLauncher launcher ) throws Exception
     {
-        Path logFile = temporaryFolder.resolve( "build.log" );
+        Path logFile = temporaryDir.resolve( "build.log" );
 
         int exitCode = launcher.run( new String[] {"clean"}, new Properties(), workingDir, logFile.toFile() );
 

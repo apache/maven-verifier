@@ -28,7 +28,6 @@ import java.io.BufferedReader;
 import java.nio.file.Files;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ import org.junit.jupiter.api.io.TempDir;
 public class ForkedLauncherTest
 {
     @TempDir
-    public Path temporaryFolder;
+    public Path temporaryDir;
     
     private ForkedLauncher launcher;
     
@@ -52,8 +51,8 @@ public class ForkedLauncherTest
     @Test
     public void mvnw() throws Exception
     {
-        launcher = new ForkedLauncher( ".", Collections.<String, String>emptyMap(), false, true );
-        Path logFile = temporaryFolder.resolve( "build.log" );
+        launcher = new ForkedLauncher( ".", Collections.emptyMap(), false, true );
+        Path logFile = temporaryDir.resolve( "build.log" );
 
         int exitCode = launcher.run( new String[0], new Properties(), workingDir, logFile.toFile() );
 
@@ -66,8 +65,8 @@ public class ForkedLauncherTest
     @Test
     public void mvnwDebug() throws Exception
     {
-        launcher = new ForkedLauncher( ".", Collections.<String, String>emptyMap(), true, true );
-        Path logFile = temporaryFolder.resolve( "build.log" );
+        launcher = new ForkedLauncher( ".", Collections.emptyMap(), true, true );
+        Path logFile = temporaryDir.resolve( "build.log" );
 
         int exitCode = launcher.run( new String[0], new Properties(), workingDir, logFile.toFile() );
 
@@ -92,8 +91,8 @@ public class ForkedLauncherTest
                 text.add( line );
             }
 
-            String message = "%s doesn't contain '%s', was:\n%s";
-            fail( String.format( message, file.getFileName().toString(), expectedline, text ) );
+            String message = "%s doesn't contain '%s', was:%n%s";
+            fail( String.format( message, file.getFileName(), expectedline, text ) );
         }
     }
 
