@@ -1821,7 +1821,7 @@ public class Verifier
         throws IOException, VerificationException
     {
         String fileName = getArtifactPath( groupId, artifactId, version, ext );
-        if ( content.equals( FileUtils.fileRead( fileName ) ) )
+        if ( !content.equals( FileUtils.fileRead( fileName ) ) )
         {
             throw new VerificationException( "Content of " + fileName + " does not equal " + content );
         }
