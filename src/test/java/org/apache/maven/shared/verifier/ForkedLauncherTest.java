@@ -1,4 +1,4 @@
-package org.apache.maven.it;
+package org.apache.maven.shared.verifier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
