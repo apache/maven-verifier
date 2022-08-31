@@ -22,26 +22,27 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.nio.file.Files;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 
 public class ForkedLauncherTest
 {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public Path temporaryDir;
     
     private ForkedLauncher launcher;
     
@@ -50,10 +51,10 @@ public class ForkedLauncherTest
     @Test
     public void mvnw() throws Exception
     {
-        launcher = new ForkedLauncher( ".", Collections.<String, String>emptyMap(), false, true );
-        File logFile = temporaryFolder.newFile( "build.log" );
+        launcher = new ForkedLauncher( ".", Collections.emptyMap(), false, true );
+        Path logFile = temporaryDir.resolve( "build.log" );
 
-        int exitCode = launcher.run( new String[0], new Properties(), workingDir, logFile );
+        int exitCode = launcher.run( new String[0], new Properties(), workingDir, logFile.toFile() );
 
         // most likely this contains the exception in case exitCode != 0
         expectFileLine( logFile, "Hello World" );
@@ -64,10 +65,10 @@ public class ForkedLauncherTest
     @Test
     public void mvnwDebug() throws Exception
     {
-        launcher = new ForkedLauncher( ".", Collections.<String, String>emptyMap(), true, true );
-        File logFile = temporaryFolder.newFile( "build.log" );
+        launcher = new ForkedLauncher( ".", Collections.emptyMap(), true, true );
+        Path logFile = temporaryDir.resolve( "build.log" );
 
-        int exitCode = launcher.run( new String[0], new Properties(), workingDir, logFile );
+        int exitCode = launcher.run( new String[0], new Properties(), workingDir, logFile.toFile() );
 
         // most likely this contains the exception in case exitCode != 0
         expectFileLine( logFile, "Hello World" );
@@ -75,10 +76,9 @@ public class ForkedLauncherTest
         assertThat( "exit code", exitCode , is ( 0 ) );
     }
 
-    static void expectFileLine( File file, String expectedline ) throws IOException
+    static void expectFileLine( Path file, String expectedline ) throws IOException
     {
-        try ( FileReader fr = new FileReader( file );
-              BufferedReader br = new BufferedReader( fr ) )
+        try ( BufferedReader br = Files.newBufferedReader( file, StandardCharsets.UTF_8 ) )
         {
             Collection<String> text = new ArrayList<>();
             String line;
@@ -91,8 +91,8 @@ public class ForkedLauncherTest
                 text.add( line );
             }
 
-            String message = "%s doesn't contain '%s', was:\n%s";
-            fail( String.format( message, file.getName(), expectedline, text ) );
+            String message = "%s doesn't contain '%s', was:%n%s";
+            fail( String.format( message, file.getFileName(), expectedline, text ) );
         }
     }
 

@@ -19,22 +19,22 @@ package org.apache.maven.it;
  * under the License.
  */
 
-import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+
 public class Embedded3xLauncherTest
 {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public Path temporaryDir;
 
 
     private final String workingDir = Paths.get( "src/test/resources" ).toAbsolutePath().toString();
@@ -56,11 +56,11 @@ public class Embedded3xLauncherTest
 
     private void runLauncher( MavenLauncher launcher ) throws Exception
     {
-        File logFile = temporaryFolder.newFile( "build.log" );
+        Path logFile = temporaryDir.resolve( "build.log" );
 
-        int exitCode = launcher.run( new String[] {"clean"}, new Properties(), workingDir, logFile );
+        int exitCode = launcher.run( new String[] {"clean"}, new Properties(), workingDir, logFile.toFile() );
 
         assertThat( "exit code unexpected, build log: " + System.lineSeparator() +
-                        new String( Files.readAllBytes( logFile.toPath() ) ), exitCode, is( 0 ) );
+                        new String( Files.readAllBytes( logFile ) ), exitCode, is( 0 ) );
     }
 }
