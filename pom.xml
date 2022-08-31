@@ -76,11 +76,13 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>5.8.0</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
       <version>2.2</version>
+      <scope>test</scope>
     </dependency>
     <!-- embedder for testing Embedded3xLauncher with classpath -->
     <dependency>

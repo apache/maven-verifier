@@ -59,7 +59,6 @@ import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 import org.apache.maven.shared.utils.cli.WriterStreamConsumer;
 import org.apache.maven.shared.utils.io.FileUtils;
-import org.junit.jupiter.api.Assertions;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -1047,24 +1046,6 @@ public class Verifier
     }
 
     /**
-     * 
-     * @param file the path of the file to check
-     * @deprecated Use {@link #verifyFilePresent(String)} instead.
-     */
-    @Deprecated
-    public void assertFilePresent( String file )
-    {
-        try
-        {
-            verifyFilePresent( file );
-        }
-        catch ( VerificationException e )
-        {
-            Assertions.fail( e.getMessage() );
-        }
-    }
-
-    /**
      * Verifies the given file's content matches an regular expression. 
      * Note this method also checks that the file exists and is readable.
      *
@@ -1091,28 +1072,6 @@ public class Verifier
     }
 
     /**
-     * Check the given file's content matches a regular expression. Note this method also checks that the file exists
-     * and is readable.
-     *
-     * @param file the path of the file to check
-     * @param regex a regular expression that the file's contents should match
-     * @see Pattern
-     * @deprecated Use {@link #verifyFileContentMatches(String, String)} instead.
-     */
-    @Deprecated
-    public void assertFileMatches( String file, String regex )
-    {
-        try
-        {
-            verifyFileContentMatches( file, regex );
-        }
-        catch ( VerificationException e )
-        {
-            Assertions.fail( e.getMessage() );
-        }
-    }
-
-    /**
      * Verifies that the given file does not exist.
      * 
      * @param file the path of the file to check
@@ -1121,24 +1080,6 @@ public class Verifier
     public void verifyFileNotPresent( String file ) throws VerificationException
     {
         verifyFilePresence( file, false );
-    }
-
-    /**
-     * 
-     * @param file the path of the file to check
-     * @deprecated Use {@link #verifyFileNotPresent(String)} instead.
-     */
-    @Deprecated
-    public void assertFileNotPresent( String file )
-    {
-        try
-        {
-            verifyFileNotPresent( file );
-        }
-        catch ( VerificationException e )
-        {
-            Assertions.fail( e.getMessage() );
-        }
     }
 
     private void verifyArtifactPresence( boolean wanted, String groupId, String artifactId, String version, String ext )
@@ -1179,36 +1120,6 @@ public class Verifier
                     throws VerificationException
     {
         verifyArtifactPresence( false, groupId, artifactId, version, ext );
-    }
-
-    private void assertArtifactPresence( boolean wanted, String org, String name, String version, String ext )
-    {
-        try
-        {
-            verifyArtifactPresence( wanted, org, name, version, ext );
-        }
-        catch ( VerificationException e )
-        {
-            Assertions.fail( e.getMessage() );
-        }
-    }
-
-    /**
-     * @deprecated Use {@link #verifyArtifactPresent(String, String, String, String)} instead.
-     */
-    @Deprecated
-    public void assertArtifactPresent( String org, String name, String version, String ext )
-    {
-        assertArtifactPresence( true, org, name, version, ext );
-    }
-
-    /**
-     * @deprecated Use {@link #verifyArtifactNotPresent(String, String, String, String)} instead.
-     */
-    @Deprecated
-    public void assertArtifactNotPresent( String org, String name, String version, String ext )
-    {
-        assertArtifactPresence( false, org, name, version, ext );
     }
 
     private void verifyExpectedResult( String line )
@@ -1914,17 +1825,6 @@ public class Verifier
         {
             throw new VerificationException( "Content of " + fileName + " does not equal " + content );
         }
-    }
-
-    /**
-     * @deprecated Use {@link #verifyArtifactContent(String, String, String, String, String)} instead.
-     */
-    @Deprecated
-    public void assertArtifactContents( String org, String artifact, String version, String type, String contents )
-        throws IOException
-    {
-        String fileName = getArtifactPath( org, artifact, version, type );
-        Assertions.assertEquals( contents, FileUtils.fileRead( fileName ) );
     }
 
     static class UserModelReader

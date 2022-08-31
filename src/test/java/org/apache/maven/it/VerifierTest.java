@@ -86,8 +86,8 @@ public class VerifierTest
     {
         //File file = new File( "src/test/resources/mshared104.jar!fud.xml" );
         Verifier verifier = new Verifier( "src/test/resources" );
-        verifier.assertFilePresent( "mshared104.jar!/pom.xml" );
-        verifier.assertFileNotPresent( "mshared104.jar!/fud.xml" );
+        verifier.verifyFilePresent( "mshared104.jar!/pom.xml" );
+        verifier.verifyFileNotPresent( "mshared104.jar!/fud.xml" );
     }
 
     @Test
