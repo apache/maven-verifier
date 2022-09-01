@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class VerifierTest
 {
@@ -118,4 +120,14 @@ public class VerifierTest
         ForkedLauncherTest.expectFileLine( logFile, "Hello World from Maven Home" );
     }
 
+    @Test
+    void testDefaultFilterMap() throws VerificationException
+    {
+        Verifier verifier = new Verifier( "src/test/resources" );
+        Map<String, String> filterMap = verifier.newDefaultFilterMap();
+
+        assertEquals( 2, filterMap.size() );
+        assertTrue( filterMap.containsKey( "@basedir@" ) );
+        assertTrue( filterMap.containsKey( "@baseurl@" ) );
+    }
 }
