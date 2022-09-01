@@ -1,4 +1,4 @@
-package org.apache.maven.it;
+package org.apache.maven.shared.verifier;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,9 +20,9 @@ package org.apache.maven.it;
  */
 
 /**
- * @author Benjamin Bentmann
+ * @author Jason van Zyl
  */
-class LauncherException
+public class VerificationException
     extends Exception
 {
     /**
@@ -30,14 +30,22 @@ class LauncherException
      */
     private static final long serialVersionUID = 1L;
 
-    LauncherException( String message )
+    public VerificationException()
+    {
+    }
+
+    public VerificationException( String message )
     {
         super( message );
     }
 
-    LauncherException( String message, Throwable cause )
+    public VerificationException( Throwable cause )
+    {
+        super( cause );
+    }
+
+    public VerificationException( String message, Throwable cause )
     {
         super( message, cause );
     }
-
 }
