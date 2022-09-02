@@ -25,19 +25,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,11 +49,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.CommandLineUtils;
-import org.apache.maven.shared.utils.cli.Commandline;
-import org.apache.maven.shared.utils.cli.StreamConsumer;
-import org.apache.maven.shared.utils.cli.WriterStreamConsumer;
 import org.apache.maven.shared.utils.io.FileUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -698,130 +690,6 @@ public class Verifier
     public String getArtifactMetadataPath( String gid, String aid )
     {
         return getArtifactMetadataPath( gid, aid, null );
-    }
-
-    public void executeHook( String filename )
-        throws VerificationException
-    {
-        try
-        {
-            File f = new File( getBasedir(), filename );
-
-            if ( !f.exists() )
-            {
-                return;
-            }
-
-            List<String> lines = loadFile( f, true );
-
-            for ( String line1 : lines )
-            {
-                String line = resolveCommandLineArg( line1 );
-
-                executeCommand( line );
-            }
-        }
-        catch ( VerificationException e )
-        {
-            throw e;
-        }
-        catch ( Exception e )
-        {
-            throw new VerificationException( e );
-        }
-    }
-
-    private void executeCommand( String line )
-        throws VerificationException
-    {
-        int index = line.indexOf( " " );
-
-        String cmd;
-
-        String args = null;
-
-        if ( index >= 0 )
-        {
-            cmd = line.substring( 0, index );
-
-            args = line.substring( index + 1 );
-        }
-        else
-        {
-            cmd = line;
-        }
-
-        if ( "rm".equals( cmd ) )
-        {
-            System.out.println( "Removing file: " + args );
-
-            File f = new File( args );
-
-            if ( f.exists() && !f.delete() )
-            {
-                throw new VerificationException( "Error removing file - delete failed" );
-            }
-        }
-        else if ( "rmdir".equals( cmd ) )
-        {
-            System.out.println( "Removing directory: " + args );
-
-            try
-            {
-                File f = new File( args );
-
-                FileUtils.deleteDirectory( f );
-            }
-            catch ( IOException e )
-            {
-                throw new VerificationException( "Error removing directory - delete failed" );
-            }
-        }
-        else if ( "svn".equals( cmd ) )
-        {
-            launchSubversion( line, getBasedir() );
-        }
-        else
-        {
-            throw new VerificationException( "unknown command: " + cmd );
-        }
-    }
-
-    public static void launchSubversion( String line, String basedir )
-        throws VerificationException
-    {
-        try
-        {
-            Commandline cli = new Commandline( line );
-
-            cli.setWorkingDirectory( basedir );
-
-            try ( Writer logWriter = new FileWriter( new File( basedir, LOG_FILENAME ) ) ) 
-            {
-                StreamConsumer out = new WriterStreamConsumer( logWriter );
-
-                StreamConsumer err = new WriterStreamConsumer( logWriter );
-
-                System.out.println( "Command: " + CommandLineUtils.toString( cli.getCommandline() ) );
-
-                int ret = CommandLineUtils.executeCommandLine( cli, out, err );
-
-                if ( ret > 0 )
-                {
-                    System.err.println( "Exit code: " + ret );
-
-                    throw new VerificationException();
-                }
-            }
-        }
-        catch ( CommandLineException e )
-        {
-            throw new VerificationException( e );
-        }
-        catch ( IOException e )
-        {
-            throw new VerificationException( e );
-        }
     }
 
     private static String retrieveLocalRepo( String settingsXmlPath )
@@ -1567,218 +1435,6 @@ public class Verifier
         return result;
     }
 
-    private static List<String> discoverIntegrationTests( String directory )
-        throws VerificationException
-    {
-        try
-        {
-            ArrayList<String> tests = new ArrayList<String>();
-
-            List<File> subTests = FileUtils.getFiles( new File( directory ), "**/goals.txt", null );
-
-            for ( File testCase : subTests )
-            {
-                tests.add( testCase.getParent() );
-            }
-
-            return tests;
-        }
-        catch ( IOException e )
-        {
-            throw new VerificationException( directory + " is not a valid test case container", e );
-        }
-    }
-
-    private void displayLogFile()
-    {
-        System.out.println( "Log file contents:" );
-
-        try ( BufferedReader reader = 
-                        new BufferedReader( new FileReader( new File( getBasedir(), getLogFileName() ) ) ) )
-        {
-            String line = reader.readLine();
-            
-            while ( line != null )
-            {
-                System.out.println( line );
-                line = reader.readLine();
-            }
-        }
-        catch ( IOException e )
-        {
-            System.err.println( "Error: " + e );
-        }
-    }
-
-    // ----------------------------------------------------------------------
-    //
-    // ----------------------------------------------------------------------
-
-    public static void main( String args[] )
-        throws VerificationException
-    {
-        String basedir = System.getProperty( "user.dir" );
-
-        List<String> tests = null;
-
-        List<String> argsList = new ArrayList<String>();
-
-        String settingsFile = null;
-
-        // skip options
-        for ( int i = 0; i < args.length; i++ )
-        {
-            if ( args[i].startsWith( "-D" ) )
-            {
-                int index = args[i].indexOf( "=" );
-                if ( index >= 0 )
-                {
-                    System.setProperty( args[i].substring( 2, index ), args[i].substring( index + 1 ) );
-                }
-                else
-                {
-                    System.setProperty( args[i].substring( 2 ), "true" );
-                }
-            }
-            else if ( "-s".equals( args[i] ) || "--settings".equals( args[i] ) )
-            {
-                if ( i == args.length - 1 )
-                {
-                    // should have been detected before
-                    throw new IllegalStateException( "missing argument to -s" );
-                }
-                i += 1;
-
-                settingsFile = args[i];
-            }
-            else if ( args[i].startsWith( "-" ) )
-            {
-                System.out.println( "skipping unrecognised argument: " + args[i] );
-            }
-            else
-            {
-                argsList.add( args[i] );
-            }
-        }
-
-        if ( argsList.size() == 0 )
-        {
-            if ( FileUtils.fileExists( basedir + File.separator + "integration-tests.txt" ) )
-            {
-                try
-                {
-                    tests = FileUtils.loadFile( new File( basedir, "integration-tests.txt" ) );
-                }
-                catch ( IOException e )
-                {
-                    System.err.println( "Unable to load integration tests file" );
-
-                    System.err.println( e.getMessage() );
-
-                    System.exit( 2 );
-                }
-            }
-            else
-            {
-                tests = discoverIntegrationTests( "." );
-            }
-        }
-        else
-        {
-            tests = new ArrayList<String>( argsList.size() );
-            NumberFormat fmt = new DecimalFormat( "0000" );
-            for ( String test : argsList )
-            {
-                if ( test.endsWith( "," ) )
-                {
-                    test = test.substring( 0, test.length() - 1 );
-                }
-
-                if ( StringUtils.isNumeric( test ) )
-                {
-
-                    test = "it" + fmt.format( Integer.valueOf( test ) );
-                    tests.add( test.trim() );
-                }
-                else if ( "it".startsWith( test ) )
-                {
-                    test = test.trim();
-                    if ( test.length() > 0 )
-                    {
-                        tests.add( test );
-                    }
-                }
-                else if ( FileUtils.fileExists( test ) && new File( test ).isDirectory() )
-                {
-                    tests.addAll( discoverIntegrationTests( test ) );
-                }
-                else
-                {
-                    System.err.println(
-                        "[WARNING] rejecting " + test + " as an invalid test or test source directory" );
-                }
-            }
-        }
-
-        if ( tests.size() == 0 )
-        {
-            System.out.println( "No tests to run" );
-        }
-
-        int exitCode = 0;
-
-        List<String> failed = new ArrayList<String>();
-        for ( String test : tests )
-        {
-            System.out.print( test + "... " );
-
-            String dir = basedir + "/" + test;
-
-            if ( !new File( dir, "goals.txt" ).exists() )
-            {
-                System.err.println( "Test " + test + " in " + dir + " does not exist" );
-
-                System.exit( 2 );
-            }
-
-            Verifier verifier = new Verifier( dir );
-            verifier.findLocalRepo( settingsFile );
-
-            System.out.println( "Using default local repository: " + verifier.localRepo );
-
-            try
-            {
-                runIntegrationTest( verifier );
-            }
-            catch ( Throwable e )
-            {
-                verifier.resetStreams();
-
-                System.out.println( "FAILED" );
-
-                verifier.displayStreamBuffers();
-
-                System.out.println( ">>>>>> Error Stacktrace:" );
-                e.printStackTrace( System.out );
-                System.out.println( "<<<<<< Error Stacktrace" );
-
-                verifier.displayLogFile();
-
-                exitCode = 1;
-
-                failed.add( test );
-            }
-        }
-
-        System.out.println( tests.size() - failed.size() + "/" + tests.size() + " passed" );
-        if ( !failed.isEmpty() )
-        {
-            System.out.println( "Failed tests: " + failed );
-        }
-
-        System.exit( exitCode );
-    }
-
     private void findLocalRepo( String settingsFile )
         throws VerificationException
     {
@@ -1809,40 +1465,6 @@ public class Verifier
         localRepo = repoDir.getAbsolutePath();
 
         localRepoLayout = System.getProperty( "maven.repo.local.layout", "default" );
-    }
-
-    private static void runIntegrationTest( Verifier verifier )
-        throws VerificationException
-    {
-        verifier.executeHook( "prebuild-hook.txt" );
-
-        Properties properties = verifier.loadProperties( "system.properties" );
-
-        Properties controlProperties = verifier.loadProperties( "verifier.properties" );
-
-        boolean chokeOnErrorOutput = Boolean.valueOf( controlProperties.getProperty( "failOnErrorOutput", "true" ) );
-
-        List<String> goals = verifier.loadFile( verifier.getBasedir(), "goals.txt", false );
-
-        List<String> cliOptions = verifier.loadFile( verifier.getBasedir(), "cli-options.txt", false );
-
-        verifier.setCliOptions( cliOptions );
-
-        verifier.setSystemProperties( properties );
-
-        verifier.setVerifierProperties( controlProperties );
-
-        verifier.executeGoals( goals );
-
-        verifier.executeHook( "postbuild-hook.txt" );
-
-        System.out.println( "*** Verifying: fail when [ERROR] detected? " + chokeOnErrorOutput + " ***" );
-
-        verifier.verify( chokeOnErrorOutput );
-
-        verifier.resetStreams();
-
-        System.out.println( "OK" );
     }
 
     /**
