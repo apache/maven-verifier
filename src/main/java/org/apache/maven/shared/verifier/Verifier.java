@@ -94,7 +94,7 @@ public class Verifier
 
     private boolean debug;
 
-    /** 
+    /**
      * If {@code true} uses {@link ForkedLauncher}, if {@code false} uses {@link Embedded3xLauncher},
      * otherwise considers the value {@link #forkMode}.
      */
@@ -164,13 +164,13 @@ public class Verifier
         this( basedir, settingsFile, debug, forkJvm, defaultCliOptions, null );
     }
 
-    public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome ) 
+    public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome )
             throws VerificationException
     {
         this( basedir, settingsFile, debug, null, DEFAULT_CLI_OPTIONS, mavenHome );
     }
 
-    public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome, String[] defaultCliOptions ) 
+    public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome, String[] defaultCliOptions )
         throws VerificationException
     {
         this( basedir, settingsFile, debug, null, defaultCliOptions, mavenHome );
@@ -354,7 +354,7 @@ public class Verifier
         Properties properties = new Properties();
 
         File propertiesFile = new File( getBasedir(), filename );
-        try ( FileInputStream fis = new FileInputStream( propertiesFile ) ) 
+        try ( FileInputStream fis = new FileInputStream( propertiesFile ) )
         {
             properties.load( fis );
         }
@@ -876,7 +876,7 @@ public class Verifier
     /**
      * There are 226 references to this method in Maven core ITs. In most (all?) cases it is used together with
      * {@link #newDefaultFilterProperties()}. Need to remove both methods and update all clients eventually/
-     * 
+     *
      * @param srcPath          The path to the input file, relative to the base directory, must not be
      *                         <code>null</code>.
      * @param dstPath          The path to the output file, relative to the base directory and possibly equal to the
@@ -943,7 +943,7 @@ public class Verifier
 
     /**
      * Verifies that the given file exists.
-     * 
+     *
      * @param file the path of the file to check
      * @throws VerificationException in case the given file does not exist
      */
@@ -953,7 +953,7 @@ public class Verifier
     }
 
     /**
-     * Verifies the given file's content matches an regular expression. 
+     * Verifies the given file's content matches an regular expression.
      * Note this method also checks that the file exists and is readable.
      *
      * @param file the path of the file to check
@@ -980,7 +980,7 @@ public class Verifier
 
     /**
      * Verifies that the given file does not exist.
-     * 
+     *
      * @param file the path of the file to check
      * @throws VerificationException if the given file exists
      */
@@ -1001,7 +1001,7 @@ public class Verifier
 
     /**
      * Verifies that the artifact given through its Maven coordinates exists.
-     * 
+     *
      * @param groupId the groupId of the artifact (must not be null)
      * @param artifactId the artifactId of the artifact (must not be null)
      * @param version the version of the artifact (must not be null)
@@ -1016,7 +1016,7 @@ public class Verifier
 
     /**
      * Verifies that the artifact given through its Maven coordinates does not exist.
-     * 
+     *
      * @param groupId the groupId of the artifact (must not be null)
      * @param artifactId the artifactId of the artifact (must not be null)
      * @param version the version of the artifact (must not be null)
@@ -1237,20 +1237,9 @@ public class Verifier
 
         File logFile = new File( getBasedir(), getLogFileName() );
 
-        for ( Object cliOption : cliOptions )
+        for ( String cliOption : cliOptions )
         {
-            String key = String.valueOf( cliOption );
-
-            String resolvedArg = resolveCommandLineArg( key );
-
-            try
-            {
-                args.addAll( Arrays.asList( CommandLineUtils.translateCommandline( resolvedArg ) ) );
-            }
-            catch ( Exception e )
-            {
-                e.printStackTrace();
-            }
+            args.add( cliOption.replace( "${basedir}", getBasedir() ) );
         }
 
         Collections.addAll( args, defaultCliOptions );
@@ -1303,7 +1292,7 @@ public class Verifier
         }
     }
 
-    private MavenLauncher getMavenLauncher( Map<String, String> envVars )
+    protected MavenLauncher getMavenLauncher( Map<String, String> envVars )
         throws LauncherException
     {
         boolean fork;
@@ -1364,7 +1353,7 @@ public class Verifier
             {
                 String defaultClasspath = System.getProperty( "maven.bootclasspath" );
                 String defaultClassworldConf = System.getProperty( "classworlds.conf" );
-                embeddedLauncher = Embedded3xLauncher.createFromMavenHome( mavenHome, defaultClassworldConf, 
+                embeddedLauncher = Embedded3xLauncher.createFromMavenHome( mavenHome, defaultClassworldConf,
                         parseClasspath( defaultClasspath ) );
             }
         }
@@ -1423,18 +1412,6 @@ public class Verifier
         }
     }
 
-    private String resolveCommandLineArg( String key )
-    {
-        String result = key.replaceAll( "\\$\\{basedir\\}", getBasedir() );
-        if ( result.contains( "\\\\" ) )
-        {
-            result = result.replaceAll( "\\\\", "\\" );
-        }
-        result = result.replaceAll( "\\/\\/", "\\/" );
-
-        return result;
-    }
-
     private void findLocalRepo( String settingsFile )
         throws VerificationException
     {
@@ -1469,13 +1446,13 @@ public class Verifier
 
     /**
      * Verifies that the artifact given by its Maven coordinates exists and contains the given content.
-     * 
+     *
      * @param groupId the groupId of the artifact (must not be null)
      * @param artifactId the artifactId of the artifact (must not be null)
      * @param version the version of the artifact (must not be null)
      * @param ext the extension of the artifact (must not be null)
      * @param content the expected content
-     * @throws IOException if reading from the artifact fails 
+     * @throws IOException if reading from the artifact fails
      * @throws VerificationException if the content of the artifact differs
      */
     public void verifyArtifactContent( String groupId, String artifactId, String version, String ext, String content )
@@ -1599,9 +1576,26 @@ public class Verifier
         this.cliOptions = cliOptions;
     }
 
+    /**
+     * Add a command line argument, each argument must be set separately one by one.
+     * <p>
+     * <code>${basedir}</code> in argument will be replaced by value of {@link #getBasedir()} during execution.
+     * @param option an argument to add
+     */
     public void addCliOption( String option )
     {
         cliOptions.add( option );
+    }
+
+    /**
+     * Add a command line arguments, each argument must be set separately one by one.
+     * <p>
+     * <code>${basedir}</code> in argument will be replaced by value of {@link #getBasedir()} during execution.
+     * @param options an arguments list to add
+     */
+    public void addCliOptions( String... options )
+    {
+        Collections.addAll( cliOptions, options );
     }
 
     public Properties getSystemProperties()
