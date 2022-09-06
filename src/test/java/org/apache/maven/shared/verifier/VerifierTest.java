@@ -19,6 +19,7 @@ package org.apache.maven.shared.verifier;
  * under the License.
  */
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -26,14 +27,23 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class VerifierTest
 {
@@ -101,7 +111,7 @@ public class VerifierTest
     }
 
     @Test
-    public void testLoadPropertiesFNFE() throws VerificationException
+    public void testLoadPropertiesFNFE()
     {
         VerificationException exception = assertThrows( VerificationException.class, () -> {
             Verifier verifier = new Verifier( "src/test/resources" );
@@ -129,5 +139,88 @@ public class VerifierTest
         assertEquals( 2, filterMap.size() );
         assertTrue( filterMap.containsKey( "@basedir@" ) );
         assertTrue( filterMap.containsKey( "@baseurl@" ) );
+    }
+
+    @Test
+    void testDefaultMavenArgument() throws VerificationException
+    {
+        TestVerifier verifier = new TestVerifier( "src/test/resources" );
+
+        verifier.executeGoal( "test" );
+
+        assertThat( verifier.launcher.cliArgs, arrayContaining(
+            "-e", "--batch-mode", "-Dmaven.repo.local=test-local-repo",
+            "org.apache.maven.plugins:maven-clean-plugin:clean", "test" ) );
+    }
+
+    public static Stream<Arguments> argumentsForTest()
+    {
+        return Stream.of(
+            arguments( "test-argument", "test-argument" ),
+            arguments( "test1/${basedir}/test2/${basedir}", "test1/src/test/resources/test2/src/test/resources" ),
+            arguments( "argument with space", "argument with space" )
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource( "argumentsForTest" )
+    void argumentShouldBePassedAsIs( String inputArgument, String expectedArgument ) throws VerificationException
+    {
+        TestVerifier verifier = new TestVerifier( "src/test/resources" );
+
+        verifier.addCliOption( inputArgument );
+        verifier.executeGoal( "test" );
+
+        assertThat( verifier.launcher.cliArgs, hasItemInArray( expectedArgument ) );
+    }
+
+    @Test
+    void cliOptionsShouldAddSeparateArguments() throws VerificationException
+    {
+        TestVerifier verifier = new TestVerifier( "src/test/resources" );
+
+        verifier.addCliOptions( "cliArg1", "cliArg2" );
+        verifier.executeGoal( "test" );
+
+        assertThat( verifier.launcher.cliArgs, allOf(
+            hasItemInArray( "cliArg1" ), hasItemInArray( "cliArg2" ) ) );
+
+    }
+
+    private static class TestMavenLauncher implements MavenLauncher
+    {
+        String[] cliArgs;
+
+        @Override
+        public int run( String[] cliArgs, Properties systemProperties, String workingDirectory, File logFile )
+            throws IOException, LauncherException
+        {
+            this.cliArgs = cliArgs;
+            return 0;
+        }
+
+        @Override
+        public String getMavenVersion() throws IOException, LauncherException
+        {
+            return null;
+        }
+    }
+
+    private static class TestVerifier extends Verifier
+    {
+        TestMavenLauncher launcher;
+
+        public TestVerifier( String basedir ) throws VerificationException
+        {
+            super( basedir );
+            setLocalRepo( "test-local-repo" );
+            launcher = new TestMavenLauncher();
+        }
+
+        @Override
+        protected MavenLauncher getMavenLauncher( Map<String, String> envVars ) throws LauncherException
+        {
+            return launcher;
+        }
     }
 }
