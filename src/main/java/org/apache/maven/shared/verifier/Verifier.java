@@ -64,7 +64,7 @@ public class Verifier
 {
     private static final String LOG_FILENAME = "log.txt";
 
-    private static final String[] DEFAULT_CLI_OPTIONS = {"-e", "--batch-mode"};
+    private static final String[] DEFAULT_CLI_ARGUMENTS = {"-e", "--batch-mode"};
 
     private String localRepo;
 
@@ -74,13 +74,13 @@ public class Verifier
 
     private final ByteArrayOutputStream errStream = new ByteArrayOutputStream();
 
-    private final String[] defaultCliOptions;
+    private final String[] defaultCliArguments;
 
     private PrintStream originalOut;
 
     private PrintStream originalErr;
 
-    private List<String> cliOptions = new ArrayList<String>();
+    private List<String> cliArguments = new ArrayList<>();
 
     private Properties systemProperties = new Properties();
 
@@ -143,40 +143,41 @@ public class Verifier
     public Verifier( String basedir, String settingsFile, boolean debug )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, DEFAULT_CLI_OPTIONS );
+        this( basedir, settingsFile, debug, DEFAULT_CLI_ARGUMENTS );
     }
 
-    public Verifier( String basedir, String settingsFile, boolean debug, String[] defaultCliOptions )
+    public Verifier( String basedir, String settingsFile, boolean debug, String[] defaultCliArguments )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, null, defaultCliOptions );
+        this( basedir, settingsFile, debug, null, defaultCliArguments );
     }
 
     public Verifier( String basedir, String settingsFile, boolean debug, boolean forkJvm )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, forkJvm, DEFAULT_CLI_OPTIONS );
+        this( basedir, settingsFile, debug, forkJvm, DEFAULT_CLI_ARGUMENTS );
     }
 
-    public Verifier( String basedir, String settingsFile, boolean debug, boolean forkJvm, String[] defaultCliOptions )
+    public Verifier( String basedir, String settingsFile, boolean debug, boolean forkJvm, String[] defaultCliArguments )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, forkJvm, defaultCliOptions, null );
+        this( basedir, settingsFile, debug, forkJvm, defaultCliArguments, null );
     }
 
     public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome )
             throws VerificationException
     {
-        this( basedir, settingsFile, debug, null, DEFAULT_CLI_OPTIONS, mavenHome );
+        this( basedir, settingsFile, debug, null, DEFAULT_CLI_ARGUMENTS, mavenHome );
     }
 
-    public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome, String[] defaultCliOptions )
+    public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome,
+                     String[] defaultCliArguments )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, null, defaultCliOptions, mavenHome );
+        this( basedir, settingsFile, debug, null, defaultCliArguments, mavenHome );
     }
 
-    private Verifier( String basedir, String settingsFile, boolean debug, Boolean forkJvm, String[] defaultCliOptions,
+    private Verifier( String basedir, String settingsFile, boolean debug, Boolean forkJvm, String[] defaultCliArguments,
             String mavenHome ) throws VerificationException
     {
         this.basedir = basedir;
@@ -210,7 +211,7 @@ public class Verifier
             forkMode = "auto";
         }
 
-        this.defaultCliOptions = defaultCliOptions == null ? new String[0] : defaultCliOptions.clone();
+        this.defaultCliArguments = defaultCliArguments == null ? new String[0] : defaultCliArguments.clone();
     }
 
     private static String getDefaultMavenHome()
@@ -1237,12 +1238,12 @@ public class Verifier
 
         File logFile = new File( getBasedir(), getLogFileName() );
 
-        for ( String cliOption : cliOptions )
+        for ( String cliArgument : cliArguments )
         {
-            args.add( cliOption.replace( "${basedir}", getBasedir() ) );
+            args.add( cliArgument.replace( "${basedir}", getBasedir() ) );
         }
 
-        Collections.addAll( args, defaultCliOptions );
+        Collections.addAll( args, defaultCliArguments );
 
         if ( this.mavenDebug )
         {
@@ -1266,10 +1267,10 @@ public class Verifier
 
         try
         {
-            String[] cliArgs = args.toArray( new String[args.size()] );
 
             MavenLauncher launcher = getMavenLauncher( envVars );
 
+            String[] cliArgs = args.toArray( new String[0] );
             ret = launcher.run( cliArgs, systemProperties, getBasedir(), logFile );
         }
         catch ( LauncherException e )
@@ -1566,14 +1567,23 @@ public class Verifier
         }
     }
 
+    /**
+     * @deprecated will be removed without replacement,
+     * for arguments adding please use {@link #addCliArgument(String)}, {@link #addCliArguments(String...)}
+     */
+    @Deprecated
     public List<String> getCliOptions()
     {
-        return cliOptions;
+        return cliArguments;
     }
 
+    /**
+     * @deprecated will be removed
+     */
+    @Deprecated
     public void setCliOptions( List<String> cliOptions )
     {
-        this.cliOptions = cliOptions;
+        this.cliArguments = cliOptions;
     }
 
     /**
@@ -1581,22 +1591,52 @@ public class Verifier
      * <p>
      * <code>${basedir}</code> in argument will be replaced by value of {@link #getBasedir()} during execution.
      * @param option an argument to add
+     * @deprecated please use {@link #addCliArgument(String)}
      */
+    @Deprecated
     public void addCliOption( String option )
     {
-        cliOptions.add( option );
+        addCliArgument( option );
+    }
+
+    /**
+     * Add a command line argument, each argument must be set separately one by one.
+     * <p>
+     * <code>${basedir}</code> in argument will be replaced by value of {@link #getBasedir()} during execution.
+     *
+     * @param cliArgument an argument to add
+     */
+    public void addCliArgument( String cliArgument )
+    {
+        cliArguments.add( cliArgument );
     }
 
     /**
      * Add a command line arguments, each argument must be set separately one by one.
      * <p>
      * <code>${basedir}</code> in argument will be replaced by value of {@link #getBasedir()} during execution.
+     *
      * @param options an arguments list to add
+     * @deprecated
      */
+    @Deprecated
     public void addCliOptions( String... options )
     {
-        Collections.addAll( cliOptions, options );
+        addCliArguments( options );
     }
+
+    /**
+     * Add a command line arguments, each argument must be set separately one by one.
+     * <p>
+     * <code>${basedir}</code> in argument will be replaced by value of {@link #getBasedir()} during execution.
+     *
+     * @param cliArguments an arguments list to add
+     */
+    public void addCliArguments( String... cliArguments )
+    {
+        Collections.addAll( this.cliArguments, cliArguments );
+    }
+
 
     public Properties getSystemProperties()
     {

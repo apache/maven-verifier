@@ -168,18 +168,18 @@ public class VerifierTest
     {
         TestVerifier verifier = new TestVerifier( "src/test/resources" );
 
-        verifier.addCliOption( inputArgument );
+        verifier.addCliArgument( inputArgument );
         verifier.executeGoal( "test" );
 
         assertThat( verifier.launcher.cliArgs, hasItemInArray( expectedArgument ) );
     }
 
     @Test
-    void cliOptionsShouldAddSeparateArguments() throws VerificationException
+    void addCliArgsShouldAddSeparateArguments() throws VerificationException
     {
         TestVerifier verifier = new TestVerifier( "src/test/resources" );
 
-        verifier.addCliOptions( "cliArg1", "cliArg2" );
+        verifier.addCliArguments( "cliArg1", "cliArg2" );
         verifier.executeGoal( "test" );
 
         assertThat( verifier.launcher.cliArgs, allOf(
