@@ -100,6 +100,7 @@ public class VerifierTest
         Verifier verifier = new Verifier( "src/test/resources" );
         verifier.verifyFilePresent( "mshared104.jar!/pom.xml" );
         verifier.verifyFileNotPresent( "mshared104.jar!/fud.xml" );
+        verifier.resetStreams();
     }
 
     @Test
@@ -115,7 +116,14 @@ public class VerifierTest
     {
         VerificationException exception = assertThrows( VerificationException.class, () -> {
             Verifier verifier = new Verifier( "src/test/resources" );
-            verifier.loadProperties( "unknown.properties" );
+            try
+            {
+                verifier.loadProperties( "unknown.properties" );
+            }
+            finally
+            {
+                verifier.resetStreams();
+            }
         } );
         assertInstanceOf( FileNotFoundException.class, exception.getCause() );
     }
@@ -126,6 +134,7 @@ public class VerifierTest
         String mavenHome = Paths.get( "src/test/resources/maven-home" ).toAbsolutePath().toString();
         Verifier verifier = new Verifier( temporaryDir.toString(), null, false, mavenHome );
         verifier.executeGoal( "some-goal" );
+        verifier.resetStreams();
         Path logFile = Paths.get( verifier.getBasedir(), verifier.getLogFileName() );
         ForkedLauncherTest.expectFileLine( logFile, "Hello World from Maven Home" );
     }
@@ -135,6 +144,7 @@ public class VerifierTest
     {
         Verifier verifier = new Verifier( "src/test/resources" );
         Map<String, String> filterMap = verifier.newDefaultFilterMap();
+        verifier.resetStreams();
 
         assertEquals( 2, filterMap.size() );
         assertTrue( filterMap.containsKey( "@basedir@" ) );
@@ -147,6 +157,21 @@ public class VerifierTest
         TestVerifier verifier = new TestVerifier( "src/test/resources" );
 
         verifier.executeGoal( "test" );
+        verifier.resetStreams();
+
+        assertThat( verifier.launcher.cliArgs, arrayContaining(
+            "-e", "--batch-mode", "-Dmaven.repo.local=test-local-repo",
+            "org.apache.maven.plugins:maven-clean-plugin:clean", "test" ) );
+    }
+
+    @Test
+    void testDefaultMavenArgumentWithExecuteMethod() throws VerificationException
+    {
+        TestVerifier verifier = new TestVerifier( "src/test/resources" );
+
+        verifier.addCliArgument( "test" );
+        verifier.execute();
+        verifier.resetStreams();
 
         assertThat( verifier.launcher.cliArgs, arrayContaining(
             "-e", "--batch-mode", "-Dmaven.repo.local=test-local-repo",
@@ -170,6 +195,7 @@ public class VerifierTest
 
         verifier.addCliArgument( inputArgument );
         verifier.executeGoal( "test" );
+        verifier.resetStreams();
 
         assertThat( verifier.launcher.cliArgs, hasItemInArray( expectedArgument ) );
     }
@@ -181,6 +207,7 @@ public class VerifierTest
 
         verifier.addCliArguments( "cliArg1", "cliArg2" );
         verifier.executeGoal( "test" );
+        verifier.resetStreams();
 
         assertThat( verifier.launcher.cliArgs, allOf(
             hasItemInArray( "cliArg1" ), hasItemInArray( "cliArg2" ) ) );

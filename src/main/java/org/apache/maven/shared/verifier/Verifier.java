@@ -35,7 +35,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +64,13 @@ public class Verifier
     private static final String LOG_FILENAME = "log.txt";
 
     private static final String[] DEFAULT_CLI_ARGUMENTS = {"-e", "--batch-mode"};
+
+    /**
+     * Command used to clean project before execution.
+     * <p
+     * NOTE: Neither test lifecycle binding nor prefix resolution here but call the goal directly.
+     */
+    private static final String CLEAN_CLI_ARGUMENT = "org.apache.maven.plugins:maven-clean-plugin:clean";
 
     private String localRepo;
 
@@ -1175,18 +1181,54 @@ public class Verifier
     //
     // ----------------------------------------------------------------------
 
+    /**
+     * Execute Maven.
+     * <p>
+     * For replacement please use:
+     * <pre>
+     *   verifier.addCliArgument( "goal" );
+     *   verifier.execute();
+     * </pre>
+     *
+     * @deprecated will be removed without replacement.
+     */
+    @Deprecated
     public void executeGoal( String goal )
         throws VerificationException
     {
         executeGoal( goal, environmentVariables );
     }
 
+    /**
+     * Execute Maven.
+     * <p>
+     * For replacement please use:
+     * <pre>
+     *   verifier.addCliArgument( "goal" );
+     *   verifier.setEnvironmentVariable( "key1", "value1" );
+     *   verifier.setEnvironmentVariable( "key2", "value2" );
+     *   verifier.execute();
+     * </pre>
+     *
+     * @deprecated will be removed without replacement.
+     */
     public void executeGoal( String goal, Map<String, String> envVars )
         throws VerificationException
     {
-        executeGoals( Arrays.asList( goal ), envVars );
+        executeGoals( Collections.singletonList( goal ), envVars );
     }
 
+    /**
+     * Execute Maven.
+     * <p>
+     * For replacement please use:
+     * <pre>
+     *   verifier.addCliArguments( "goal1", "goal2" );
+     *   verifier.execute();
+     * </pre>
+     *
+     * @deprecated will be removed without replacement.
+     */
     public void executeGoals( List<String> goals )
         throws VerificationException
     {
@@ -1217,31 +1259,34 @@ public class Verifier
         }
     }
 
+    /**
+     * Execute Maven.
+     * <p>
+     * For replacement please use:
+     * <pre>
+     *   verifier.addCliArguments( "goal1", "goal2" );
+     *   verifier.setEnvironmentVariable( "key1", "value1" );
+     *   verifier.setEnvironmentVariable( "key2", "value2" );
+     *   verifier.execute();
+     * </pre>
+     *
+     * @deprecated will be removed without replacement.
+     */
     public void executeGoals( List<String> goals, Map<String, String> envVars )
         throws VerificationException
     {
-        List<String> allGoals = new ArrayList<String>();
+        cliArguments.addAll( goals );
+        environmentVariables.putAll( envVars );
+        execute();
+    }
 
-        if ( autoclean )
-        {
-            /*
-             * NOTE: Neither test lifecycle binding nor prefix resolution here but call the goal directly.
-             */
-            allGoals.add( "org.apache.maven.plugins:maven-clean-plugin:clean" );
-        }
+    /**
+     * Execute Maven.
+     */
+    public void execute() throws VerificationException
+    {
 
-        allGoals.addAll( goals );
-
-        List<String> args = new ArrayList<String>();
-
-        int ret;
-
-        File logFile = new File( getBasedir(), getLogFileName() );
-
-        for ( String cliArgument : cliArguments )
-        {
-            args.add( cliArgument.replace( "${basedir}", getBasedir() ) );
-        }
+        List<String> args = new ArrayList<>();
 
         Collections.addAll( args, defaultCliArguments );
 
@@ -1263,12 +1308,22 @@ public class Verifier
             args.add( "-Dmaven.repo.local=" + localRepo );
         }
 
-        args.addAll( allGoals );
+        if ( autoclean )
+        {
+            args.add( CLEAN_CLI_ARGUMENT );
+        }
+
+        for ( String cliArgument : cliArguments )
+        {
+            args.add( cliArgument.replace( "${basedir}", getBasedir() ) );
+        }
+
+        int ret;
+        File logFile = new File( getBasedir(), getLogFileName() );
 
         try
         {
-
-            MavenLauncher launcher = getMavenLauncher( envVars );
+            MavenLauncher launcher = getMavenLauncher( environmentVariables );
 
             String[] cliArgs = args.toArray( new String[0] );
             ret = launcher.run( cliArgs, systemProperties, getBasedir(), logFile );
@@ -1284,8 +1339,6 @@ public class Verifier
 
         if ( ret > 0 )
         {
-            System.err.println( "Exit code: " + ret );
-
             throw new VerificationException(
                 "Exit code was non-zero: " + ret + "; command line and log = \n" + new File( mavenHome,
                                                                                              "bin/mvn" ) + " "
@@ -1697,6 +1750,13 @@ public class Verifier
         return autoclean;
     }
 
+    /**
+     * Clean project before execution by adding {@link #CLEAN_CLI_ARGUMENT} to command line.
+     * <p>
+     * By default, options is enabled.
+     *
+     * @param autoclean indicate if option is enabled
+     */
     public void setAutoclean( boolean autoclean )
     {
         this.autoclean = autoclean;
