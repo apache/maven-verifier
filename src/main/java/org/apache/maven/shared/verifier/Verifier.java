@@ -1669,20 +1669,6 @@ public class Verifier
      * <p>
      * <code>${basedir}</code> in argument will be replaced by value of {@link #getBasedir()} during execution.
      *
-     * @param options an arguments list to add
-     * @deprecated
-     */
-    @Deprecated
-    public void addCliOptions( String... options )
-    {
-        addCliArguments( options );
-    }
-
-    /**
-     * Add a command line arguments, each argument must be set separately one by one.
-     * <p>
-     * <code>${basedir}</code> in argument will be replaced by value of {@link #getBasedir()} during execution.
-     *
      * @param cliArguments an arguments list to add
      */
     public void addCliArguments( String... cliArguments )
