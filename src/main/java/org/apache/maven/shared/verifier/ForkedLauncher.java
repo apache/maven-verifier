@@ -154,7 +154,7 @@ class ForkedLauncher
         }
         catch ( CommandLineException e )
         {
-            throw new LauncherException( "Failed to run Maven: " + e.getMessage() + "\n" + cmd, e );
+            throw new LauncherException( "Failed to run Maven: " + cmd, e );
         }
         finally
         {

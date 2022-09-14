@@ -981,7 +981,7 @@ public class Verifier
         }
         catch ( IOException e )
         {
-            throw new VerificationException( "Could not read from " + file + ": " + e.getMessage(), e );
+            throw new VerificationException( "Could not read from " + file, e );
         }
     }
 
@@ -1330,7 +1330,7 @@ public class Verifier
         }
         catch ( LauncherException e )
         {
-            throw new VerificationException( "Failed to execute Maven: " + e.getMessage(), e );
+            throw new VerificationException( "Failed to execute Maven", e );
         }
         catch ( IOException e )
         {

@@ -139,7 +139,7 @@ class Embedded3xLauncher
         }
         catch ( ReflectiveOperationException e )
         {
-            throw new LauncherException( e.getMessage(), e );
+            throw new LauncherException( "Failed to initialize Laucher", e );
         }
     }
 
@@ -228,7 +228,7 @@ class Embedded3xLauncher
         }
         catch ( IllegalAccessException | InvocationTargetException e )
         {
-            throw new LauncherException( "Failed to run Maven: " + e.getMessage(), e );
+            throw new LauncherException( "Failed to run Maven", e );
         }
         finally
         {
