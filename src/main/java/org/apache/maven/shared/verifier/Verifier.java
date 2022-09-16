@@ -48,7 +48,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.cli.CommandLineUtils;
 import org.apache.maven.shared.utils.io.FileUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -203,7 +202,7 @@ public class Verifier
         findLocalRepo( settingsFile );
         if ( mavenHome == null )
         {
-            this.mavenHome = getDefaultMavenHome();
+            this.mavenHome = System.getProperty( "maven.home" );
             useWrapper = Files.exists( Paths.get( getBasedir(), "mvnw" ) );
         }
         else
@@ -218,27 +217,6 @@ public class Verifier
         }
 
         this.defaultCliArguments = defaultCliArguments == null ? new String[0] : defaultCliArguments.clone();
-    }
-
-    private static String getDefaultMavenHome()
-    {
-        String defaultMavenHome = System.getProperty( "maven.home" );
-
-        if ( defaultMavenHome == null )
-        {
-            Properties envVars = CommandLineUtils.getSystemEnvVars();
-            defaultMavenHome = envVars.getProperty( "M2_HOME" );
-        }
-
-        if ( defaultMavenHome == null )
-        {
-            File f = new File( System.getProperty( "user.home" ), "m2" );
-            if ( new File( f, "bin/mvn" ).isFile() )
-            {
-                defaultMavenHome = f.getAbsolutePath();
-            }
-        }
-        return defaultMavenHome;
     }
 
     public void setLocalRepo( String localRepo )
@@ -1246,16 +1224,7 @@ public class Verifier
         }
         else
         {
-            File f = new File( System.getProperty( "user.home" ), "m2/bin/mvn" );
-
-            if ( f.exists() )
-            {
-                return f.getAbsolutePath();
-            }
-            else
-            {
-                return "mvn";
-            }
+            return "mvn";
         }
     }
 

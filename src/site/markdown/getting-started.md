@@ -69,8 +69,6 @@ The following directories are considered as potential Maven home directory (rele
 
 1. Maven Home path given in the constructor
 2. System property `maven.home`
-3. Environment variable `M2_HOME`
-4. System property `user.home` suffixed with `/m2` (only considered if it contains `bin/mvn`)
 
 ### Setting Maven Home for Embedded Launcher
 
