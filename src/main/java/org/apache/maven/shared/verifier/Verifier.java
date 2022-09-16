@@ -110,7 +110,7 @@ public class Verifier
 
     private String mavenHome;
 
-    // will launch mvn with --debug 
+    // will launch mvn with -X
     private boolean mavenDebug = false;
 
     /**
@@ -1292,7 +1292,7 @@ public class Verifier
 
         if ( this.mavenDebug )
         {
-            args.add( "--debug" );
+            args.add( "-X" );
         }
 
         /*
@@ -1792,11 +1792,23 @@ public class Verifier
         }
     }
 
+    /**
+     * @deprecated will be removed without replacement
+     */
+    @Deprecated
     public boolean isMavenDebug()
     {
         return mavenDebug;
     }
 
+    /**
+     * For replacement please use:
+     * <pre>
+     *     verifier.addCliArgument( "-X" );
+     * </pre>
+     *
+     * @deprecated will be removed without replacement.
+     */
     public void setMavenDebug( boolean mavenDebug )
     {
         this.mavenDebug = mavenDebug;
