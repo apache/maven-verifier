@@ -29,7 +29,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -81,10 +80,6 @@ public class Verifier
 
     private final String[] defaultCliArguments;
 
-    private PrintStream originalOut;
-
-    private PrintStream originalErr;
-
     private List<String> cliArguments = new ArrayList<>();
 
     private Properties systemProperties = new Properties();
@@ -96,8 +91,6 @@ public class Verifier
     private boolean autoclean = true;
 
     private String localRepoLayout = "default";
-
-    private boolean debug;
 
     /**
      * If {@code true} uses {@link ForkedLauncher}, if {@code false} uses {@link Embedded3xLauncher},
@@ -190,15 +183,6 @@ public class Verifier
         this.forkJvm = forkJvm;
         this.forkMode = System.getProperty( "verifier.forkMode" );
 
-        if ( !debug )
-        {
-            originalOut = System.out;
-
-            originalErr = System.err;
-        }
-
-        setDebug( debug );
-
         findLocalRepo( settingsFile );
         if ( mavenHome == null )
         {
@@ -224,35 +208,19 @@ public class Verifier
         this.localRepo = localRepo;
     }
 
+    /**
+     * @deprecated will be removed without replacement
+     */
     public void resetStreams()
     {
-        if ( !debug )
-        {
-            System.setOut( originalOut );
-
-            System.setErr( originalErr );
-        }
     }
 
+
+    /**
+     * @deprecated will be removed without replacement
+     */
     public void displayStreamBuffers()
     {
-        String out = outStream.toString();
-
-        if ( out != null && out.trim().length() > 0 )
-        {
-            System.out.println( "----- Standard Out -----" );
-
-            System.out.println( out );
-        }
-
-        String err = errStream.toString();
-
-        if ( err != null && err.trim().length() > 0 )
-        {
-            System.err.println( "----- Standard Error -----" );
-
-            System.err.println( err );
-        }
     }
 
     // ----------------------------------------------------------------------
@@ -690,7 +658,6 @@ public class Verifier
 
         if ( settingsXmlPath != null )
         {
-            System.out.println( "Using settings from " + settingsXmlPath );
             userXml = new File( settingsXmlPath );
         }
         else
@@ -1077,7 +1044,7 @@ public class Verifier
                     }
                     catch ( IOException e )
                     {
-                        System.err.println( "WARN: error closing stream: " + e );
+                        // ignore
                     }
                 }
             }
@@ -1528,23 +1495,17 @@ public class Verifier
 
         public void warning( SAXParseException spe )
         {
-            printParseError( "Warning", spe );
+            // ignore warnings
         }
 
-        public void error( SAXParseException spe )
+        public void error( SAXParseException spe ) throws SAXException
         {
-            printParseError( "Error", spe );
+            throw new SAXException( spe );
         }
 
-        public void fatalError( SAXParseException spe )
+        public void fatalError( SAXParseException spe ) throws SAXException
         {
-            printParseError( "Fatal Error", spe );
-        }
-
-        private void printParseError( String type, SAXParseException spe )
-        {
-            System.err.println(
-                type + " [line " + spe.getLineNumber() + ", row " + spe.getColumnNumber() + "]: " + spe.getMessage() );
+            throw new SAXException( spe );
         }
 
         public String getLocalRepository()
@@ -1749,16 +1710,11 @@ public class Verifier
         this.logFileName = logFileName;
     }
 
+    /**
+     * @deprecated will be removed without replacement
+     */
     public void setDebug( boolean debug )
     {
-        this.debug = debug;
-
-        if ( !debug )
-        {
-            System.setOut( new PrintStream( outStream ) );
-
-            System.setErr( new PrintStream( errStream ) );
-        }
     }
 
     /**
