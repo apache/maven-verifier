@@ -1128,14 +1128,14 @@ public class Verifier
 
     /**
      * Execute Maven.
+     *
+     * @deprecated will be removed.
      * <p>
      * For replacement please use:
      * <pre>
      *   verifier.addCliArgument( "goal" );
      *   verifier.execute();
      * </pre>
-     *
-     * @deprecated will be removed without replacement.
      */
     @Deprecated
     public void executeGoal( String goal )
@@ -1146,6 +1146,8 @@ public class Verifier
 
     /**
      * Execute Maven.
+     *
+     * @deprecated will be removed.
      * <p>
      * For replacement please use:
      * <pre>
@@ -1154,8 +1156,6 @@ public class Verifier
      *   verifier.setEnvironmentVariable( "key2", "value2" );
      *   verifier.execute();
      * </pre>
-     *
-     * @deprecated will be removed without replacement.
      */
     public void executeGoal( String goal, Map<String, String> envVars )
         throws VerificationException
@@ -1165,14 +1165,14 @@ public class Verifier
 
     /**
      * Execute Maven.
+     *
+     * @deprecated will be removed
      * <p>
      * For replacement please use:
      * <pre>
      *   verifier.addCliArguments( "goal1", "goal2" );
      *   verifier.execute();
      * </pre>
-     *
-     * @deprecated will be removed without replacement.
      */
     public void executeGoals( List<String> goals )
         throws VerificationException
@@ -1197,6 +1197,8 @@ public class Verifier
 
     /**
      * Execute Maven.
+     *
+     * @deprecated will be removed
      * <p>
      * For replacement please use:
      * <pre>
@@ -1205,8 +1207,6 @@ public class Verifier
      *   verifier.setEnvironmentVariable( "key2", "value2" );
      *   verifier.execute();
      * </pre>
-     *
-     * @deprecated will be removed without replacement.
      */
     public void executeGoals( List<String> goals, Map<String, String> envVars )
         throws VerificationException

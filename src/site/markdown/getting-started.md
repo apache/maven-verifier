@@ -129,17 +129,27 @@ For the Context Class Loader case this would mean the following dependencies are
 
 ## Run
 
-Calling `executeGoals` runs Maven with the given goals or phases and optionally some additional environment variables. It throws a `VerificationException` in case the execution is not successful (e.g. binary not found or exit code > 0). It is either using a forked JVM or is executed in the same JVM depending on the configuration.
+Calling `execute()` runs Maven with the given Verifier configuration, like CLI arguments and environment variables.
+At least one CLI argument should be provided which specifies either the Maven phase(s) and/or the goal(s) to execute 
+unless project has a default goal.
+
+It throws a `VerificationException` in case the execution is not successful (e.g. binary not found or exit code > 0). 
+The method is using either a forked JVM or the same JVM for executing Maven depending on the configuration.
 
 ```
-verifier.executeGoals( "package" );
+verifier.addCliArgument( "package" )
+verifier.execute();
 ```
 
 ## Verify
 
-After executing the Maven goals there are several methods starting with prefix `verify` which allow you to check for the build result, check the log for certain contents and the existence of generated artifacts.
+After calling `execute` one should call one or multiple of the methods starting with prefix `verify` to
+* check for the build result
+* check the log for certain contents or 
+* check for the existence of generated artifacts.
 
-The main method `verify(boolean)` takes into consideration a file named `expected-results.txt` being located in the base directory. Each line consists of a file path (optionally prefixed by `!`) and it is automatically verified that the file exists or is missing (in case the path starts with `!`).
+The main method `verify(boolean)` takes into consideration a file named `expected-results.txt` being located in the tested project's base directory. 
+Each line consists of a file path (optionally prefixed by `!`) and it is automatically verified that the file exists or is missing (in case the path starts with `!`).
 
 ```
 verifier.verify( true ); // if true, throws an exception in case of errors in the build log
