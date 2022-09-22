@@ -21,7 +21,6 @@ package org.apache.maven.shared.verifier;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -31,6 +30,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -149,7 +149,7 @@ class Embedded3xLauncher
 
         if ( urls == null )
         {
-            urls = new ArrayList<URL>();
+            urls = new ArrayList<>();
 
             File bootDir = new File( mavenHome, "boot" );
             addUrls( urls, bootDir );
@@ -160,7 +160,7 @@ class Embedded3xLauncher
             throw new IllegalArgumentException( "Invalid Maven home directory " + mavenHome );
         }
 
-        URL[] ucp = (URL[]) urls.toArray( new URL[urls.size()] );
+        URL[] ucp = urls.toArray( new URL[0] );
 
         return new URLClassLoader( ucp, ClassLoader.getSystemClassLoader().getParent() );
     }
@@ -193,7 +193,8 @@ class Embedded3xLauncher
     public int run( String[] cliArgs, Properties systemProperties, String workingDirectory, File logFile )
         throws IOException, LauncherException
     {
-        PrintStream out = ( logFile != null ) ? new PrintStream( new FileOutputStream( logFile ) ) : System.out;
+        PrintStream out = ( logFile != null )
+            ? new PrintStream( Files.newOutputStream( logFile.toPath() ) ) : System.out;
         try
         {
             File workingDirectoryPath = new File( workingDirectory );
