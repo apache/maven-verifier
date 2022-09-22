@@ -28,14 +28,14 @@
   </parent>
 
   <artifactId>maven-verifier</artifactId>
-  <version>2.0.0-M1-SNAPSHOT</version>
+  <version>2.0.0-M1</version>
 
   <name>Apache Maven Verifier Component</name>
   <description>Provides a test harness for Maven integration tests.</description>
 
   <properties>
     <javaVersion>8</javaVersion>
-    <project.build.outputTimestamp>2022-03-19T12:57:53Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2022-09-22T20:28:45Z</project.build.outputTimestamp>
   </properties>
 
   <contributors>
@@ -48,7 +48,7 @@
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-verifier.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-verifier.git</developerConnection>
     <url>https://github.com/apache/maven-verifier/tree/${project.scm.tag}</url>
-    <tag>HEAD</tag>
+    <tag>maven-verifier-2.0.0-M1</tag>
   </scm>
   <issueManagement>
     <system>Jira</system>
