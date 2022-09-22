@@ -31,6 +31,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -942,20 +943,9 @@ public class Verifier
     {
         Map<String, String> filterMap = new HashMap<>();
 
-        String basedir = new File( getBasedir() ).getAbsolutePath();
-        filterMap.put( "@basedir@", basedir );
-
-        /*
-         * NOTE: Maven fails to properly handle percent-encoded "file:" URLs (WAGON-111) so don't use File.toURI() here
-         * and just do it the simple way.
-         */
-        String baseurl = basedir;
-        if ( !baseurl.startsWith( "/" ) )
-        {
-            baseurl = '/' + baseurl;
-        }
-        baseurl = "file://" + baseurl.replace( '\\', '/' );
-        filterMap.put( "@baseurl@", baseurl );
+        Path basedir = Paths.get( getBasedir() ).toAbsolutePath();
+        filterMap.put( "@basedir@", basedir.toString() );
+        filterMap.put( "@baseurl@", basedir.toUri().toASCIIString() );
 
         return filterMap;
     }
@@ -1064,9 +1054,10 @@ public class Verifier
     private void verifyFilePresence( String filePath, boolean wanted )
         throws VerificationException
     {
-        if ( filePath.indexOf( "!/" ) > 0 )
+        if ( filePath.contains( "!/" ) )
         {
-            String urlString = "jar:file:" + getBasedir() + "/" + filePath;
+            Path basedir = Paths.get( getBasedir() ).toAbsolutePath();
+            String urlString = "jar:" + basedir.toUri().toASCIIString() + "/" + filePath;
 
             InputStream is = null;
             try
