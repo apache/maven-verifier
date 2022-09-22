@@ -55,7 +55,7 @@ class ForkedLauncher
 
     ForkedLauncher( String mavenHome )
     {
-        this( mavenHome, Collections.<String, String>emptyMap(), false );
+        this( mavenHome, Collections.emptyMap(), false );
     }
 
     ForkedLauncher( String mavenHome, Map<String, String> envVars, boolean debugJvm )

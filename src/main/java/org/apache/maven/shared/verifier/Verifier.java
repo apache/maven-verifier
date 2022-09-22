@@ -20,7 +20,6 @@ package org.apache.maven.shared.verifier;
  */
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,9 +27,9 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -74,17 +73,13 @@ public class Verifier
 
     private final String basedir;
 
-    private final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-
-    private final ByteArrayOutputStream errStream = new ByteArrayOutputStream();
-
     private final String[] defaultCliArguments;
 
     private List<String> cliArguments = new ArrayList<>();
 
     private Properties systemProperties = new Properties();
 
-    private Map<String, String> environmentVariables = new HashMap<String, String>();
+    private Map<String, String> environmentVariables = new HashMap<>();
 
     private Properties verifierProperties = new Properties();
 
@@ -211,6 +206,7 @@ public class Verifier
     /**
      * @deprecated will be removed without replacement
      */
+    @Deprecated
     public void resetStreams()
     {
     }
@@ -219,6 +215,7 @@ public class Verifier
     /**
      * @deprecated will be removed without replacement
      */
+    @Deprecated
     public void displayStreamBuffers()
     {
     }
@@ -332,7 +329,7 @@ public class Verifier
     public List<String> loadLines( String filename, String encoding )
         throws IOException
     {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
 
         try ( BufferedReader reader = getReader( filename, encoding ) )
         {
@@ -355,11 +352,11 @@ public class Verifier
 
         if ( StringUtils.isNotEmpty( encoding ) )
         {
-            return new BufferedReader( new InputStreamReader( new FileInputStream( file ), encoding ) );
+            return Files.newBufferedReader( file.toPath(), Charset.forName( encoding ) );
         }
         else
         {
-            return new BufferedReader( new FileReader( file ) );
+            return Files.newBufferedReader( file.toPath() );
         }
     }
 
@@ -372,7 +369,7 @@ public class Verifier
     public List<String> loadFile( File file, boolean hasCommand )
         throws VerificationException
     {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
 
         if ( file.exists() )
         {
@@ -390,10 +387,6 @@ public class Verifier
                     }
                     line = reader.readLine();
                 }
-            }
-            catch ( FileNotFoundException e )
-            {
-                throw new VerificationException( e );
             }
             catch ( IOException e )
             {
@@ -422,7 +415,7 @@ public class Verifier
             newLine += getArtifactPath( artifact );
             newLine += line.substring( index + 1 );
 
-            List<String> l = new ArrayList<String>();
+            List<String> l = new ArrayList<>();
             l.add( newLine );
 
             int endIndex = newLine.lastIndexOf( '/' );
@@ -565,7 +558,7 @@ public class Verifier
 
     public List<String> getArtifactFileNameList( String org, String name, String version, String ext )
     {
-        List<String> files = new ArrayList<String>();
+        List<String> files = new ArrayList<>();
         String artifactPath = getArtifactPath( org, name, version, ext );
         File dir = new File( artifactPath );
         files.add( artifactPath );
@@ -1157,6 +1150,7 @@ public class Verifier
      *   verifier.execute();
      * </pre>
      */
+    @Deprecated
     public void executeGoal( String goal, Map<String, String> envVars )
         throws VerificationException
     {
@@ -1174,6 +1168,7 @@ public class Verifier
      *   verifier.execute();
      * </pre>
      */
+    @Deprecated
     public void executeGoals( List<String> goals )
         throws VerificationException
     {
@@ -1208,6 +1203,7 @@ public class Verifier
      *   verifier.execute();
      * </pre>
      */
+    @Deprecated
     public void executeGoals( List<String> goals, Map<String, String> envVars )
         throws VerificationException
     {
@@ -1356,7 +1352,7 @@ public class Verifier
         {
             return null;
         }
-        ArrayList<URL> classpathUrls = new ArrayList<URL>();
+        ArrayList<URL> classpathUrls = new ArrayList<>();
         StringTokenizer st = new StringTokenizer( classpath, File.pathSeparator );
         while ( st.hasMoreTokens() )
         {
@@ -1377,13 +1373,9 @@ public class Verifier
     {
         try
         {
-            return getMavenLauncher( Collections.<String, String>emptyMap() ).getMavenVersion();
+            return getMavenLauncher( Collections.emptyMap() ).getMavenVersion();
         }
-        catch ( LauncherException e )
-        {
-            throw new VerificationException( e );
-        }
-        catch ( IOException e )
+        catch ( LauncherException | IOException e )
         {
             throw new VerificationException( e );
         }
@@ -1460,7 +1452,7 @@ public class Verifier
     {
         private String localRepository;
 
-        private StringBuffer currentBody = new StringBuffer();
+        private StringBuilder currentBody = new StringBuilder();
 
         public void parse( File file )
             throws VerificationException
@@ -1535,7 +1527,7 @@ public class Verifier
                 }
             }
 
-            currentBody = new StringBuffer();
+            currentBody = new StringBuilder();
         }
 
         private boolean notEmpty( String test )
@@ -1713,6 +1705,7 @@ public class Verifier
     /**
      * @deprecated will be removed without replacement
      */
+    @Deprecated
     public void setDebug( boolean debug )
     {
     }
@@ -1734,6 +1727,7 @@ public class Verifier
      *
      * @deprecated will be removed without replacement.
      */
+    @Deprecated
     public void setMavenDebug( boolean mavenDebug )
     {
         this.mavenDebug = mavenDebug;
