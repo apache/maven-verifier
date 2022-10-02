@@ -73,7 +73,7 @@ public class Verifier
 
     private final String basedir;
 
-    private final String[] defaultCliArguments;
+    private  String[] defaultCliArguments;
 
     private List<String> cliArguments = new ArrayList<>();
 
@@ -115,87 +115,161 @@ public class Verifier
 
     private static MavenLauncher embeddedLauncher;
 
+    private String settingsFile;
+
     public Verifier( String basedir )
         throws VerificationException
     {
-        this( basedir, null );
+        this.basedir = basedir;
+
+        this.forkMode = System.getProperty( "verifier.forkMode" );
+
+        findLocalRepo( settingsFile );
+
+        this.mavenHome = System.getProperty( "maven.home" );
+
+        setForkMode();
+
+        useWrapper = Files.exists( Paths.get( getBasedir(), "mvnw" ) );
+
+        this.defaultCliArguments = DEFAULT_CLI_ARGUMENTS.clone();
+
     }
 
+    /**
+     * @deprecated to be removed
+     * use <ul>
+     * <li>{@link #Verifier(String basedir)}</li>
+     * </ul>
+     */
+    @Deprecated
     public Verifier( String basedir, boolean debug )
         throws VerificationException
     {
-        this( basedir, null, debug );
+        this( basedir );
     }
 
+    /**
+     * @deprecated to be removed
+     * use <ul>
+     * <li>{@link #Verifier(String basedir)}</li>
+     * <li>{@link #setSettingsFile(String settingsFile)} to set settings file</li>
+     * </ul>
+     */
+    @Deprecated
     public Verifier( String basedir, String settingsFile )
         throws VerificationException
     {
-        this( basedir, settingsFile, false );
+        this( basedir );
+        setSettingsFile( settingsFile );
+
     }
 
+    /**
+     * @deprecated to be removed
+     * use <ul>
+     * <li>{@link #Verifier(String basedir)}</li>
+     * <li>{@link #setSettingsFile(String settingsFile)} to set settings file</li>
+     * </ul>
+     */
+    @Deprecated
     public Verifier( String basedir, String settingsFile, boolean debug )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, DEFAULT_CLI_ARGUMENTS );
+        this( basedir );
+        setSettingsFile( settingsFile );
     }
 
+    /**
+     * @deprecated to be removed
+     * use <uL>
+     * <li>{@link #Verifier(String basedir)}</li>
+     * <li>{@link #setSettingsFile(String settingsFile)} to set settings file</li>
+     * <li>{@link #setDefaultCliArguments(String[] defaultCliArguments)} to set default cliArguments</li>
+     * </ul>
+     */
+    @Deprecated
     public Verifier( String basedir, String settingsFile, boolean debug, String[] defaultCliArguments )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, null, defaultCliArguments );
+        this( basedir );
+        setSettingsFile( settingsFile );
+        setDefaultCliArguments( defaultCliArguments );
     }
 
+    /**
+     * @deprecated to be removed
+     * use <ul>
+     * <li>{@link #Verifier(String)}</li>
+     * <li>{@link #setSettingsFile(String)} to set settings file</li>
+     * <li>{@link #setForkJvm(Boolean)} to set forkJvm status</li>
+     * </ul>
+     */
+    @Deprecated
     public Verifier( String basedir, String settingsFile, boolean debug, boolean forkJvm )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, forkJvm, DEFAULT_CLI_ARGUMENTS );
+        this( basedir );
+        setSettingsFile( settingsFile );
+        setForkJvm( forkJvm );
     }
 
+    /**
+     * @deprecated to be removed
+     * use <ul>
+     * <li>{@link #Verifier(String basedir)}</li>
+     * <li>{@link #setSettingsFile(String settingsFile)} to set settings file</li>
+     * <li>{@link #setForkJvm(Boolean)} to set forkJvm status and</li>
+     * <li>{@link #setDefaultCliArguments(String[] defaultCliArguments)} to set settings file</li>
+     * </ul>
+     */
+    @Deprecated
     public Verifier( String basedir, String settingsFile, boolean debug, boolean forkJvm, String[] defaultCliArguments )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, forkJvm, defaultCliArguments, null );
+        this( basedir );
+        setSettingsFile( settingsFile );
+        setForkJvm( forkJvm );
+        setDefaultCliArguments( defaultCliArguments );
+
     }
 
+    /**
+     * @deprecated to be removed
+     * use <ul>
+     * <li>{@link #Verifier(String basedir)}</li>
+     * <li>{@link #setSettingsFile(String settingsFile)} to set settings file</li>
+     * <li>{@link #setMavenHome(String mavenHome)}  to set maven home</li>
+     * </ul>
+     */
+    @Deprecated
     public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome )
             throws VerificationException
     {
-        this( basedir, settingsFile, debug, null, DEFAULT_CLI_ARGUMENTS, mavenHome );
+        this( basedir );
+        setSettingsFile( settingsFile );
+        setMavenHome( mavenHome );
     }
 
+    /**
+     * @deprecated to be removed
+     * use <ul>
+     * <li>{@link #Verifier(String basedir)}</li>
+     * <li>{@link #setSettingsFile(String settingsFile)} to set settings file</li>
+     * <li>{@link #setMavenHome(String mavenHome)}  to set maven home</li>
+     * <li>{@link #setDefaultCliArguments(String[] defaultCliArguments)} to set settings file</li>
+     * </ul>
+     */
+    @Deprecated
     public Verifier( String basedir, String settingsFile, boolean debug, String mavenHome,
                      String[] defaultCliArguments )
         throws VerificationException
     {
-        this( basedir, settingsFile, debug, null, defaultCliArguments, mavenHome );
-    }
+        this( basedir );
+        setSettingsFile( settingsFile );
+        setDefaultCliArguments( defaultCliArguments );
+        setMavenHome( mavenHome );
 
-    private Verifier( String basedir, String settingsFile, boolean debug, Boolean forkJvm, String[] defaultCliArguments,
-            String mavenHome ) throws VerificationException
-    {
-        this.basedir = basedir;
-
-        this.forkJvm = forkJvm;
-        this.forkMode = System.getProperty( "verifier.forkMode" );
-
-        findLocalRepo( settingsFile );
-        if ( mavenHome == null )
-        {
-            this.mavenHome = System.getProperty( "maven.home" );
-            useWrapper = Files.exists( Paths.get( getBasedir(), "mvnw" ) );
-        }
-        else
-        {
-            this.mavenHome = mavenHome;
-            useWrapper = false;
-        }
-
-        if ( StringUtils.isEmpty( mavenHome ) && StringUtils.isEmpty( forkMode ) )
-        {
-            forkMode = "auto";
-        }
-
-        this.defaultCliArguments = defaultCliArguments == null ? new String[0] : defaultCliArguments.clone();
     }
 
     public void setLocalRepo( String localRepo )
@@ -1675,6 +1749,7 @@ public class Verifier
         return basedir;
     }
 
+
     /**
      * Gets the name of the file used to log build output.
      *
@@ -1733,7 +1808,7 @@ public class Verifier
         this.mavenDebug = mavenDebug;
     }
 
-    public void setForkJvm( boolean forkJvm )
+    public void setForkJvm( Boolean forkJvm )
     {
         this.forkJvm = forkJvm;
     }
@@ -1762,4 +1837,44 @@ public class Verifier
     {
         return localRepo;
     }
+
+
+    public void setMavenHome( String mavenHome )
+    {
+        this.mavenHome = mavenHome;
+        setUseWrapper( false );
+        setForkMode();
+    }
+
+    public void setForkMode( String forkMode )
+    {
+        this.forkMode = forkMode;
+        setForkMode();
+    }
+
+    public void setUseWrapper( boolean useWrapper )
+    {
+        this.useWrapper = useWrapper;
+    }
+
+    public void setSettingsFile( String settingsFile ) throws VerificationException
+    {
+        this.settingsFile = settingsFile;
+        findLocalRepo( settingsFile );
+    }
+
+    public  void setDefaultCliArguments( String[] defaultCliArguments )
+    {
+        this.defaultCliArguments = defaultCliArguments == null ? new String[0] : defaultCliArguments.clone();
+    }
+
+    private void setForkMode()
+    {
+        if ( StringUtils.isEmpty( mavenHome ) && StringUtils.isEmpty( forkMode ) )
+        {
+            forkMode = "auto";
+        }
+    }
+
+
 }
