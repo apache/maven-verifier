@@ -71,14 +71,14 @@ class ForkedLauncher
         if ( wrapper )
         {
             final StringBuilder script = new StringBuilder();
-            
+
             if ( !isWindows() )
             {
                 script.append( "./" );
             }
-            
+
             script.append( "mvnw" );
-            
+
             if ( debugJvm )
             {
                 script.append( "Debug" );
@@ -119,11 +119,6 @@ class ForkedLauncher
             {
                 cmd.addEnvironment( envVar.getKey(), envVar.getValue() );
             }
-        }
-
-        if ( envVars == null || envVars.get( "JAVA_HOME" ) == null )
-        {
-            cmd.addEnvironment( "JAVA_HOME", System.getProperty( "java.home" ) );
         }
 
         cmd.addEnvironment( "MAVEN_TERMINATE_CMD", "on" );
@@ -221,7 +216,7 @@ class ForkedLauncher
 
         return version;
     }
-    
+
     private static boolean isWindows()
     {
         String osName = System.getProperty( "os.name" ).toLowerCase( Locale.US );
