@@ -1861,7 +1861,7 @@ public class Verifier
 
     private void setForkMode()
     {
-        if ( (mavenHome == null || mavenHome.isEmpty()) && (forkMode == null || forkMode.isEmpty()) )
+        if ( ( mavenHome == null || mavenHome.isEmpty() ) && ( forkMode == null || forkMode.isEmpty() ) )
         {
             forkMode = "auto";
         }
