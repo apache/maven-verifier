@@ -425,7 +425,7 @@ public class Verifier
     {
         File file = new File( getBasedir(), filename );
 
-        if ( StringUtils.isNotEmpty( encoding ) )
+        if ( encoding != null && !encoding.isEmpty() )
         {
             return Files.newBufferedReader( file.toPath(), Charset.forName( encoding ) );
         }
@@ -1396,7 +1396,7 @@ public class Verifier
     {
         if ( embeddedLauncher == null )
         {
-            if ( StringUtils.isEmpty( mavenHome ) )
+            if ( mavenHome == null || mavenHome.isEmpty() )
             {
                 embeddedLauncher = Embedded3xLauncher.createFromClasspath();
             }
@@ -1761,7 +1761,7 @@ public class Verifier
      */
     public void setLogFileName( String logFileName )
     {
-        if ( StringUtils.isEmpty( logFileName ) )
+        if ( logFileName == null || logFileName.isEmpty() )
         {
             throw new IllegalArgumentException( "log file name unspecified" );
         }
@@ -1861,7 +1861,7 @@ public class Verifier
 
     private void setForkMode()
     {
-        if ( StringUtils.isEmpty( mavenHome ) && StringUtils.isEmpty( forkMode ) )
+        if ( ( mavenHome == null || mavenHome.isEmpty() ) && ( forkMode == null || forkMode.isEmpty() ) )
         {
             forkMode = "auto";
         }
