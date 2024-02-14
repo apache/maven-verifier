@@ -96,33 +96,33 @@ For the Context Class Loader case this would mean the following dependencies are
 <dependency>
   <groupId>org.apache.maven</groupId>
   <artifactId>maven-embedder</artifactId>
-  <version>3.8.4</version>
+  <version>3.9.6</version>
   <scope>test</scope>
 </dependency>
 <!-- START transitive dependencies of embedder -->
 <dependency>
   <groupId>org.slf4j</groupId>
   <artifactId>slf4j-simple</artifactId>
-  <version>1.7.32</version>
+  <version>1.7.36</version>
   <scope>test</scope>
 </dependency>
 <!-- required due to https://issues.apache.org/jira/browse/MNG-6561 -->
 <dependency>
   <groupId>org.apache.maven</groupId>
   <artifactId>maven-compat</artifactId>
-  <version>3.8.4</version>
+  <version>3.9.6</version>
   <scope>test</scope>
 </dependency>
 <dependency>
   <groupId>org.apache.maven.resolver</groupId>
   <artifactId>maven-resolver-connector-basic</artifactId>
-  <version>1.6.3</version>
+  <version>1.9.18</version>
   <scope>test</scope>
 </dependency>
 <dependency>
   <groupId>org.apache.maven.resolver</groupId>
   <artifactId>maven-resolver-transport-http</artifactId>
-  <version>1.6.3</version>
+  <version>1.9.18</version>
   <scope>test</scope>
 </dependency>
 ```
