@@ -71,6 +71,10 @@
       <artifactId>maven-shared-utils</artifactId>
       <version>3.3.4</version>
     </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-xml</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
