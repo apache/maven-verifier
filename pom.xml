@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -33,11 +33,6 @@
   <name>Apache Maven Verifier Component</name>
   <description>Provides a test harness for Maven integration tests.</description>
 
-  <properties>
-    <javaVersion>8</javaVersion>
-    <project.build.outputTimestamp>2022-09-22T20:29:06Z</project.build.outputTimestamp>
-  </properties>
-
   <contributors>
     <contributor>
       <name>Mikolaj Izdebski</name>
@@ -47,8 +42,8 @@
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-verifier.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-verifier.git</developerConnection>
-    <url>https://github.com/apache/maven-verifier/tree/${project.scm.tag}</url>
     <tag>HEAD</tag>
+    <url>https://github.com/apache/maven-verifier/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
     <system>Jira</system>
@@ -64,6 +59,11 @@
       <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
     </site>
   </distributionManagement>
+
+  <properties>
+    <javaVersion>8</javaVersion>
+    <project.build.outputTimestamp>2022-09-22T20:29:06Z</project.build.outputTimestamp>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -148,4 +148,3 @@
     </pluginManagement>
   </build>
 </project>
-

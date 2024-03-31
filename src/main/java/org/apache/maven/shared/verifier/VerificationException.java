@@ -1,5 +1,3 @@
-package org.apache.maven.shared.verifier;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,34 +16,28 @@ package org.apache.maven.shared.verifier;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.shared.verifier;
 
 /**
  * @author Jason van Zyl
  */
-public class VerificationException
-    extends Exception
-{
+public class VerificationException extends Exception {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
-    public VerificationException()
-    {
+    public VerificationException() {}
+
+    public VerificationException(String message) {
+        super(message);
     }
 
-    public VerificationException( String message )
-    {
-        super( message );
+    public VerificationException(Throwable cause) {
+        super(cause);
     }
 
-    public VerificationException( Throwable cause )
-    {
-        super( cause );
-    }
-
-    public VerificationException( String message, Throwable cause )
-    {
-        super( message, cause );
+    public VerificationException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

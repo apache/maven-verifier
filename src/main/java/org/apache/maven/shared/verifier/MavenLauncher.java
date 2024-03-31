@@ -1,5 +1,3 @@
-package org.apache.maven.shared.verifier;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,7 @@ package org.apache.maven.shared.verifier;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.shared.verifier;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,12 +25,10 @@ import java.util.Properties;
 /**
  * @author Benjamin Bentmann
  */
-interface MavenLauncher
-{
+interface MavenLauncher {
 
-    int run( String[] cliArgs, Properties systemProperties, String workingDirectory, File logFile )
-        throws IOException, LauncherException;
+    int run(String[] cliArgs, Properties systemProperties, String workingDirectory, File logFile)
+            throws IOException, LauncherException;
 
-    String getMavenVersion()
-        throws IOException, LauncherException;
+    String getMavenVersion() throws IOException, LauncherException;
 }
