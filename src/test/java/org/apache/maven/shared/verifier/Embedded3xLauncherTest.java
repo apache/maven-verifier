@@ -1,5 +1,3 @@
-package org.apache.maven.shared.verifier;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,7 @@ package org.apache.maven.shared.verifier;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.shared.verifier;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,37 +29,33 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-
-public class Embedded3xLauncherTest
-{
+public class Embedded3xLauncherTest {
     @TempDir
     public Path temporaryDir;
 
-
-    private final String workingDir = Paths.get( "src/test/resources" ).toAbsolutePath().toString();
+    private final String workingDir =
+            Paths.get("src/test/resources").toAbsolutePath().toString();
 
     @Test
-    public void testWithClasspath() throws Exception
-    {
+    public void testWithClasspath() throws Exception {
         MavenLauncher launcher = Embedded3xLauncher.createFromClasspath();
-        runLauncher( launcher );
+        runLauncher(launcher);
     }
 
     @Test
-    public void testWithMavenHome() throws Exception
-    {
-        MavenLauncher launcher = Embedded3xLauncher.createFromMavenHome(
-            System.getProperty( "maven.home" ), null, null );
-        runLauncher( launcher );
+    public void testWithMavenHome() throws Exception {
+        MavenLauncher launcher = Embedded3xLauncher.createFromMavenHome(System.getProperty("maven.home"), null, null);
+        runLauncher(launcher);
     }
 
-    private void runLauncher( MavenLauncher launcher ) throws Exception
-    {
-        Path logFile = temporaryDir.resolve( "build.log" );
+    private void runLauncher(MavenLauncher launcher) throws Exception {
+        Path logFile = temporaryDir.resolve("build.log");
 
-        int exitCode = launcher.run( new String[] {"clean"}, new Properties(), workingDir, logFile.toFile() );
+        int exitCode = launcher.run(new String[] {"clean"}, new Properties(), workingDir, logFile.toFile());
 
-        assertThat( "exit code unexpected, build log: " + System.lineSeparator() +
-                        new String( Files.readAllBytes( logFile ) ), exitCode, is( 0 ) );
+        assertThat(
+                "exit code unexpected, build log: " + System.lineSeparator() + new String(Files.readAllBytes(logFile)),
+                exitCode,
+                is(0));
     }
 }

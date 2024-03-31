@@ -1,7 +1,3 @@
-package org.apache.maven.shared.verifier;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,14 +16,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.fail;
+package org.apache.maven.shared.verifier;
 
 import java.io.BufferedReader;
-import java.nio.file.Files;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -38,62 +32,58 @@ import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class ForkedLauncherTest
-{
+public class ForkedLauncherTest {
     @TempDir
     public Path temporaryDir;
-    
+
     private ForkedLauncher launcher;
-    
-    private final String workingDir = Paths.get( "src/test/resources/wrapper-project" ).toAbsolutePath().toString();
-    
-    @Test
-    public void mvnw() throws Exception
-    {
-        launcher = new ForkedLauncher( ".", Collections.emptyMap(), false, true );
-        Path logFile = temporaryDir.resolve( "build.log" );
 
-        int exitCode = launcher.run( new String[0], new Properties(), workingDir, logFile.toFile() );
+    private final String workingDir =
+            Paths.get("src/test/resources/wrapper-project").toAbsolutePath().toString();
+
+    @Test
+    public void mvnw() throws Exception {
+        launcher = new ForkedLauncher(".", Collections.emptyMap(), false, true);
+        Path logFile = temporaryDir.resolve("build.log");
+
+        int exitCode = launcher.run(new String[0], new Properties(), workingDir, logFile.toFile());
 
         // most likely this contains the exception in case exitCode != 0
-        expectFileLine( logFile, "Hello World" );
+        expectFileLine(logFile, "Hello World");
 
-        assertThat( "exit code", exitCode, is ( 0 ) );
+        assertThat("exit code", exitCode, is(0));
     }
 
     @Test
-    public void mvnwDebug() throws Exception
-    {
-        launcher = new ForkedLauncher( ".", Collections.emptyMap(), true, true );
-        Path logFile = temporaryDir.resolve( "build.log" );
+    public void mvnwDebug() throws Exception {
+        launcher = new ForkedLauncher(".", Collections.emptyMap(), true, true);
+        Path logFile = temporaryDir.resolve("build.log");
 
-        int exitCode = launcher.run( new String[0], new Properties(), workingDir, logFile.toFile() );
+        int exitCode = launcher.run(new String[0], new Properties(), workingDir, logFile.toFile());
 
         // most likely this contains the exception in case exitCode != 0
-        expectFileLine( logFile, "Hello World" );
+        expectFileLine(logFile, "Hello World");
 
-        assertThat( "exit code", exitCode , is ( 0 ) );
+        assertThat("exit code", exitCode, is(0));
     }
 
-    static void expectFileLine( Path file, String expectedline ) throws IOException
-    {
-        try ( BufferedReader br = Files.newBufferedReader( file, StandardCharsets.UTF_8 ) )
-        {
+    static void expectFileLine(Path file, String expectedline) throws IOException {
+        try (BufferedReader br = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             Collection<String> text = new ArrayList<>();
             String line;
-            while ( ( line = br.readLine() ) != null )
-            {
-                if ( expectedline.equals( line ) )
-                {
+            while ((line = br.readLine()) != null) {
+                if (expectedline.equals(line)) {
                     return;
                 }
-                text.add( line );
+                text.add(line);
             }
 
             String message = "%s doesn't contain '%s', was:%n%s";
-            fail( String.format( message, file.getFileName(), expectedline, text ) );
+            fail(String.format(message, file.getFileName(), expectedline, text));
         }
     }
-
 }

@@ -1,5 +1,3 @@
-package org.apache.maven.shared.verifier;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,26 +16,22 @@ package org.apache.maven.shared.verifier;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.shared.verifier;
 
 /**
  * @author Benjamin Bentmann
  */
-class LauncherException
-    extends Exception
-{
+class LauncherException extends Exception {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
-    LauncherException( String message )
-    {
-        super( message );
+    LauncherException(String message) {
+        super(message);
     }
 
-    LauncherException( String message, Throwable cause )
-    {
-        super( message, cause );
+    LauncherException(String message, Throwable cause) {
+        super(message, cause);
     }
-
 }
