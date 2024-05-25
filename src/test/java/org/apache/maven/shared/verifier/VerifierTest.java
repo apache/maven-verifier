@@ -40,13 +40,16 @@ package org.apache.maven.shared.verifier;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -56,6 +59,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -227,6 +232,25 @@ public class VerifierTest {
         verifier.resetStreams();
 
         assertThat(verifier.launcher.cliArgs, allOf(hasItemInArray("cliArg1"), hasItemInArray("cliArg2")));
+    }
+
+    @Test
+    public void useRealLogFile() throws Exception {
+        FileUtils.copyDirectory(new File("src/test/resources"), new File("target/test-project"));
+        Verifier verifier = new Verifier(new File("target/test-project").getAbsolutePath());
+        verifier.setForkJvm(true);
+        File tmp = Files.createTempFile("maven", ".verifier").toFile();
+        try {
+            verifier.setLogFile(tmp);
+            verifier.addCliArguments(
+                    "clean", "-Dmaven.repo.local=" + System.getProperty("maven-local-repo", "target/test-local-repo"));
+            verifier.execute();
+            List<String> logs = Files.readAllLines(tmp.toPath());
+
+            assertThat("Maven logs not in log file", logs, hasItem(containsString("BUILD SUCCESS")));
+        } finally {
+            Files.deleteIfExists(tmp.toPath());
+        }
     }
 
     private static class TestMavenLauncher implements MavenLauncher {

@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
@@ -112,6 +113,8 @@ public class Verifier {
     private Boolean forkJvm;
 
     private String logFileName = LOG_FILENAME;
+
+    private File logFile;
 
     private String mavenHome;
 
@@ -209,7 +212,7 @@ public class Verifier {
      * use <ul>
      * <li>{@link #Verifier(String)}</li>
      * <li>{@link #setSettingsFile(String)} to set settings file</li>
-     * <li>{@link #setForkJvm(Boolean)} to set forkJvm status</li>
+     * <li>{@link #setForkJvm(boolean)} to set forkJvm status</li>
      * </ul>
      */
     @Deprecated
@@ -224,7 +227,7 @@ public class Verifier {
      * use <ul>
      * <li>{@link #Verifier(String basedir)}</li>
      * <li>{@link #setSettingsFile(String settingsFile)} to set settings file</li>
-     * <li>{@link #setForkJvm(Boolean)} to set forkJvm status and</li>
+     * <li>{@link #setForkJvm(boolean)} to set forkJvm status and</li>
      * <li>{@link #setDefaultCliArguments(String[] defaultCliArguments)} to set settings file</li>
      * </ul>
      */
@@ -303,7 +306,7 @@ public class Verifier {
     }
 
     public void verifyErrorFreeLog() throws VerificationException {
-        List<String> lines = loadFile(getBasedir(), getLogFileName(), false);
+        List<String> lines = loadFile(getLogFile(), false);
 
         for (String line : lines) {
             // A hack to keep stupid velocity resource loader errors from triggering failure
@@ -331,7 +334,7 @@ public class Verifier {
      * @throws VerificationException if text is not found in log
      */
     public void verifyTextInLog(String text) throws VerificationException {
-        List<String> lines = loadFile(getBasedir(), getLogFileName(), false);
+        List<String> lines = loadFile(getLogFile(), false);
 
         boolean result = false;
         for (String line : lines) {
@@ -1122,7 +1125,7 @@ public class Verifier {
         }
 
         int ret;
-        File logFile = new File(getBasedir(), getLogFileName());
+        File logFile = getLogFile();
 
         try {
             MavenLauncher launcher = getMavenLauncher(environmentVariables);
@@ -1467,6 +1470,24 @@ public class Verifier {
     }
 
     /**
+     *
+     * @param logFile configure the log file used to log build output
+     * @since 2.0 ish (not really sure if this will be this)
+     */
+    public void setLogFile(File logFile) {
+        this.logFile = Objects.requireNonNull(logFile, "log file cannot be null");
+    }
+
+    /**
+     *
+     * @return The log file used to log build output
+     * @since 2.0 ish (not really sure if this will be this)
+     */
+    public File getLogFile() {
+        return logFile == null ? new File(getBasedir(), logFileName) : logFile;
+    }
+
+    /**
      * @deprecated will be removed without replacement
      */
     @Deprecated
@@ -1493,7 +1514,7 @@ public class Verifier {
         this.mavenDebug = mavenDebug;
     }
 
-    public void setForkJvm(Boolean forkJvm) {
+    public void setForkJvm(boolean forkJvm) {
         this.forkJvm = forkJvm;
     }
 
