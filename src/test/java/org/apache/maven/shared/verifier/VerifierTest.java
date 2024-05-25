@@ -235,7 +235,7 @@ public class VerifierTest {
     }
 
     @Test
-    void useRealLogFile() throws Exception {
+    public void useRealLogFile() throws Exception {
         FileUtils.copyDirectory(new File("src/test/resources"), new File("target/test-project"));
         Verifier verifier = new Verifier(new File("target/test-project").getAbsolutePath());
         verifier.setForkJvm(true);

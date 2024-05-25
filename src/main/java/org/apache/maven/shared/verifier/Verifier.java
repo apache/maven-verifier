@@ -212,7 +212,7 @@ public class Verifier {
      * use <ul>
      * <li>{@link #Verifier(String)}</li>
      * <li>{@link #setSettingsFile(String)} to set settings file</li>
-     * <li>{@link #setForkJvm(Boolean)} to set forkJvm status</li>
+     * <li>{@link #setForkJvm(boolean)} to set forkJvm status</li>
      * </ul>
      */
     @Deprecated
@@ -227,7 +227,7 @@ public class Verifier {
      * use <ul>
      * <li>{@link #Verifier(String basedir)}</li>
      * <li>{@link #setSettingsFile(String settingsFile)} to set settings file</li>
-     * <li>{@link #setForkJvm(Boolean)} to set forkJvm status and</li>
+     * <li>{@link #setForkJvm(boolean)} to set forkJvm status and</li>
      * <li>{@link #setDefaultCliArguments(String[] defaultCliArguments)} to set settings file</li>
      * </ul>
      */
