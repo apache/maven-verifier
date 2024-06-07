@@ -19,6 +19,6 @@
 
 # About Apache Maven Verifier Component
 
-Provides a test harness for Maven integration tests. This is a library which can be used in own Java-based integration tests. Look at the [Getting Started guide](./getting-started.html) for more information on how to use it.
+Provides a test harness for Maven integration tests. This is a library which can be used in Java-based integration tests. Look at the [Getting Started guide](./getting-started.html) for more information on how to use it.
 
 More complex example usages can be found in the the [different integration tests](https://github.com/apache/maven-integration-testing/tree/master/core-it-suite/src/test/java/org/apache/maven/it) of [Maven Core Integration Tests](https://github.com/apache/maven-integration-testing). 
