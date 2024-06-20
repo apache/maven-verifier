@@ -50,6 +50,7 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.settings.building.SettingsBuildingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -232,6 +233,14 @@ public class VerifierTest {
         verifier.resetStreams();
 
         assertThat(verifier.launcher.cliArgs, allOf(hasItemInArray("cliArg1"), hasItemInArray("cliArg2")));
+    }
+
+    @Test
+    void testInterpolationInSettingsFile() throws SettingsBuildingException {
+        // use settings.xml with expressions for local repo
+        String localRepo = Verifier.retrieveLocalRepo("src/test/resources/settings-with-expressions.xml");
+        String expectedLocalRepo = System.getProperty("user.home") + "/test-repository";
+        assertEquals(expectedLocalRepo, localRepo);
     }
 
     @Test
