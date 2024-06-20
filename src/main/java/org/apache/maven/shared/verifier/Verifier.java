@@ -65,6 +65,12 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+import org.apache.maven.settings.building.DefaultSettingsBuilder;
+import org.apache.maven.settings.building.DefaultSettingsBuilderFactory;
+import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
+import org.apache.maven.settings.building.SettingsBuildingException;
+import org.apache.maven.settings.building.SettingsBuildingRequest;
+import org.apache.maven.settings.building.SettingsBuildingResult;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.io.FileUtils;
 import org.xml.sax.InputSource;
@@ -87,6 +93,14 @@ public class Verifier {
      * NOTE: Neither test lifecycle binding nor prefix resolution here but call the goal directly.
      */
     private static final String CLEAN_CLI_ARGUMENT = "org.apache.maven.plugins:maven-clean-plugin:clean";
+
+    public static final String USER_HOME = System.getProperty("user.home");
+
+    public static final File USER_MAVEN_CONFIGURATION_HOME = new File(USER_HOME, ".m2");
+
+    public static final File DEFAULT_USER_SETTINGS_FILE = new File(USER_MAVEN_CONFIGURATION_HOME, "settings.xml");
+
+    public static final File DEFAULT_GLOBAL_SETTINGS_FILE = new File(System.getProperty("maven.conf"), "settings.xml");
 
     private String localRepo;
 
@@ -627,31 +641,25 @@ public class Verifier {
         return getArtifactMetadataPath(gid, aid, null);
     }
 
-    private static String retrieveLocalRepo(String settingsXmlPath) throws VerificationException {
-        UserModelReader userModelReader = new UserModelReader();
+    static String retrieveLocalRepo(String settingsXmlPath) throws SettingsBuildingException {
+        DefaultSettingsBuilderFactory settingsBuilderFactory = new DefaultSettingsBuilderFactory();
+        DefaultSettingsBuilder settingsBuilder = settingsBuilderFactory.newInstance();
 
-        String userHome = System.getProperty("user.home");
-
-        File userXml;
-
-        String repo = null;
-
+        File userSettingsFile;
         if (settingsXmlPath != null) {
-            userXml = new File(settingsXmlPath);
+            userSettingsFile = new File(settingsXmlPath);
         } else {
-            userXml = new File(userHome, ".m2/settings.xml");
+            userSettingsFile = DEFAULT_USER_SETTINGS_FILE;
         }
 
-        if (userXml.exists()) {
-            userModelReader.parse(userXml);
+        SettingsBuildingRequest settingsBuildingRequest = new DefaultSettingsBuildingRequest();
+        settingsBuildingRequest.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
+        settingsBuildingRequest.setUserSettingsFile(userSettingsFile);
+        settingsBuildingRequest.setSystemProperties(System.getProperties());
 
-            String localRepository = userModelReader.getLocalRepository();
-            if (localRepository != null) {
-                repo = new File(localRepository).getAbsolutePath();
-            }
-        }
-
-        return repo;
+        // takes care of interpolation and merging
+        SettingsBuildingResult result = settingsBuilder.build(settingsBuildingRequest);
+        return result.getEffectiveSettings().getLocalRepository();
     }
 
     public void deleteArtifact(String org, String name, String version, String ext) throws IOException {
@@ -1228,11 +1236,15 @@ public class Verifier {
         }
 
         if (localRepo == null) {
-            localRepo = retrieveLocalRepo(settingsFile);
+            try {
+                localRepo = retrieveLocalRepo(settingsFile);
+            } catch (SettingsBuildingException e) {
+                throw new VerificationException("Cannot read settings.xml to determine local repository location", e);
+            }
         }
 
         if (localRepo == null) {
-            localRepo = System.getProperty("user.home") + "/.m2/repository";
+            localRepo = USER_HOME + "/.m2/repository";
         }
 
         File repoDir = new File(localRepo);
