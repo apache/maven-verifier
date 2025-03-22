@@ -71,7 +71,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class VerifierTest {
     @TempDir
-    public Path temporaryDir;
+    private Path temporaryDir;
 
     private void check(String expected, String... lines) {
         assertEquals(expected, ForkedLauncher.extractMavenVersion(Arrays.asList(lines)));
@@ -281,7 +281,7 @@ public class VerifierTest {
     private static class TestVerifier extends Verifier {
         TestMavenLauncher launcher;
 
-        public TestVerifier(String basedir) throws VerificationException {
+        TestVerifier(String basedir) throws VerificationException {
             super(basedir);
             setLocalRepo("test-local-repo");
             launcher = new TestMavenLauncher();
