@@ -46,8 +46,8 @@
     <url>https://github.com/apache/maven-verifier/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
-    <system>Jira</system>
-    <url>https://issues.apache.org/jira/issues/?jql=project+%3D+MSHARED+AND+component+%3D+maven-verifier</url>
+    <system>GitHub Issues</system>
+    <url>https://github.com/apache/maven-verifier/issues</url>
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>

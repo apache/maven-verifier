@@ -16,4 +16,6 @@
 # under the License.
 
 _extends: maven-gh-actions-shared
-tag-template: maven-verifier-$NEXT_MINOR_VERSION
+
+include-pre-releases: true
+prerelease: true
