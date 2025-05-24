@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class ForkedLauncherTest {
     @TempDir
-    public Path temporaryDir;
+    private Path temporaryDir;
 
     private ForkedLauncher launcher;
 

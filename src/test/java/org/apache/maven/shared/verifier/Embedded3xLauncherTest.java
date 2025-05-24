@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.is;
 
 public class Embedded3xLauncherTest {
     @TempDir
-    public Path temporaryDir;
+    private Path temporaryDir;
 
     private final String workingDir =
             Paths.get("src/test/resources").toAbsolutePath().toString();
