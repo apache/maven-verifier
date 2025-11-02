@@ -29,7 +29,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class Embedded3xLauncherTest {
+class Embedded3xLauncherTest {
     @TempDir
     private Path temporaryDir;
 
@@ -37,13 +37,13 @@ public class Embedded3xLauncherTest {
             Paths.get("src/test/resources").toAbsolutePath().toString();
 
     @Test
-    public void testWithClasspath() throws Exception {
+    void withClasspath() throws Exception {
         MavenLauncher launcher = Embedded3xLauncher.createFromClasspath();
         runLauncher(launcher);
     }
 
     @Test
-    public void testWithMavenHome() throws Exception {
+    void withMavenHome() throws Exception {
         MavenLauncher launcher = Embedded3xLauncher.createFromMavenHome(System.getProperty("maven.home"), null, null);
         runLauncher(launcher);
     }

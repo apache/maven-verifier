@@ -36,7 +36,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class ForkedLauncherTest {
+class ForkedLauncherTest {
     @TempDir
     private Path temporaryDir;
 
@@ -46,7 +46,7 @@ public class ForkedLauncherTest {
             Paths.get("src/test/resources/wrapper-project").toAbsolutePath().toString();
 
     @Test
-    public void mvnw() throws Exception {
+    void mvnw() throws Exception {
         launcher = new ForkedLauncher(".", Collections.emptyMap(), false, true);
         Path logFile = temporaryDir.resolve("build.log");
 
@@ -59,7 +59,7 @@ public class ForkedLauncherTest {
     }
 
     @Test
-    public void mvnwDebug() throws Exception {
+    void mvnwDebug() throws Exception {
         launcher = new ForkedLauncher(".", Collections.emptyMap(), true, true);
         Path logFile = temporaryDir.resolve("build.log");
 

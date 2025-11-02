@@ -50,7 +50,6 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.settings.building.SettingsBuildingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -78,7 +77,7 @@ public class VerifierTest {
     }
 
     @Test
-    public void testSunBug9009028ForJdk() {
+    void sunBug9009028ForJdk() {
         Properties oldProperties = System.getProperties();
         try {
             final String version = System.getProperty("java.version");
@@ -90,7 +89,7 @@ public class VerifierTest {
     }
 
     @Test
-    public void testExtractMavenVersion() {
+    void extractMavenVersion() {
         check("2.0.6", "Maven version: 2.0.6");
 
         check(
@@ -119,7 +118,7 @@ public class VerifierTest {
     }
 
     @Test
-    public void testFileInJarPresent() throws VerificationException {
+    void fileInJarPresent() throws Exception {
         // File file = new File( "src/test/resources/mshared104.jar!fud.xml" );
         Verifier verifier = new Verifier("src/test/resources");
         verifier.verifyFilePresent("mshared104.jar!/pom.xml");
@@ -128,7 +127,7 @@ public class VerifierTest {
     }
 
     @Test
-    public void testStripAnsi() {
+    void stripAnsi() {
         assertEquals(
                 "--- plugin:version:goal (id) @ artifactId ---",
                 Verifier.stripAnsi("\u001B[1m--- \u001B[0;32mplugin:version:goal\u001B[0;1m (id)\u001B[m @ "
@@ -136,9 +135,9 @@ public class VerifierTest {
     }
 
     @Test
-    public void testLoadPropertiesFNFE() {
+    void loadPropertiesFNFE() {
+        Verifier verifier = new Verifier("src/test/resources");
         VerificationException exception = assertThrows(VerificationException.class, () -> {
-            Verifier verifier = new Verifier("src/test/resources");
             try {
                 verifier.loadProperties("unknown.properties");
             } finally {
@@ -149,7 +148,7 @@ public class VerifierTest {
     }
 
     @Test
-    public void testDedicatedMavenHome() throws VerificationException, IOException {
+    void dedicatedMavenHome() throws Exception {
         String mavenHome =
                 Paths.get("src/test/resources/maven-home").toAbsolutePath().toString();
         Verifier verifier = new Verifier(temporaryDir.toString(), null, false, mavenHome);
@@ -160,7 +159,7 @@ public class VerifierTest {
     }
 
     @Test
-    void testDefaultFilterMap() throws VerificationException {
+    void defaultFilterMap() throws Exception {
         Verifier verifier = new Verifier("src/test/resources");
         Map<String, String> filterMap = verifier.newDefaultFilterMap();
         verifier.resetStreams();
@@ -171,7 +170,7 @@ public class VerifierTest {
     }
 
     @Test
-    void testDefaultMavenArgument() throws VerificationException {
+    void defaultMavenArgument() throws Exception {
         TestVerifier verifier = new TestVerifier("src/test/resources");
 
         verifier.executeGoal("test");
@@ -188,7 +187,7 @@ public class VerifierTest {
     }
 
     @Test
-    void testDefaultMavenArgumentWithExecuteMethod() throws VerificationException {
+    void defaultMavenArgumentWithExecuteMethod() throws Exception {
         TestVerifier verifier = new TestVerifier("src/test/resources");
 
         verifier.addCliArgument("test");
@@ -214,7 +213,7 @@ public class VerifierTest {
 
     @ParameterizedTest
     @MethodSource("argumentsForTest")
-    void argumentShouldBePassedAsIs(String inputArgument, String expectedArgument) throws VerificationException {
+    void argumentShouldBePassedAsIs(String inputArgument, String expectedArgument) throws Exception {
         TestVerifier verifier = new TestVerifier("src/test/resources");
 
         verifier.addCliArgument(inputArgument);
@@ -225,7 +224,7 @@ public class VerifierTest {
     }
 
     @Test
-    void addCliArgsShouldAddSeparateArguments() throws VerificationException {
+    void addCliArgsShouldAddSeparateArguments() throws Exception {
         TestVerifier verifier = new TestVerifier("src/test/resources");
 
         verifier.addCliArguments("cliArg1", "cliArg2");
@@ -236,7 +235,7 @@ public class VerifierTest {
     }
 
     @Test
-    void testInterpolationInSettingsFile() throws SettingsBuildingException {
+    void interpolationInSettingsFile() throws Exception {
         // use settings.xml with expressions for local repo
         String localRepo = Verifier.retrieveLocalRepo("src/test/resources/settings-with-expressions.xml");
         String expectedLocalRepo = System.getProperty("user.home") + "/test-repository";
@@ -244,7 +243,7 @@ public class VerifierTest {
     }
 
     @Test
-    public void useRealLogFile() throws Exception {
+    void useRealLogFile() throws Exception {
         FileUtils.copyDirectory(new File("src/test/resources"), new File("target/test-project"));
         Verifier verifier = new Verifier(new File("target/test-project").getAbsolutePath());
         verifier.setForkJvm(true);
