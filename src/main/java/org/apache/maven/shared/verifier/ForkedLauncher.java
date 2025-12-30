@@ -41,8 +41,15 @@ import org.apache.maven.shared.utils.cli.WriterStreamConsumer;
 import org.apache.maven.shared.utils.io.FileUtils;
 
 /**
+ * Launcher implementation that forks a new JVM process to execute Maven.
+ *
  * @author Benjamin Bentmann
+ * @deprecated This class is deprecated. Use
+ *             <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a>'s
+ *             {@code ForkedExecutor} instead.
+ *             See <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>.
  */
+@Deprecated
 class ForkedLauncher implements MavenLauncher {
 
     private final String mavenHome;

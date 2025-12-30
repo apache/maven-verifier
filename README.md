@@ -17,6 +17,15 @@
 Contributing to [Apache Maven Verifier](https://maven.apache.org/shared/maven-verifier/)
 ======================
 
+> **️ DEPRECATION NOTICE**
+>
+> **This project is deprecated and will be replaced by [maven-executor](https://github.com/apache/maven/tree/master/impl/maven-executor).**
+>
+> - **New projects**: Please use maven-executor instead
+> - **Existing projects**: Please plan migration to maven-executor
+> - See [MIGRATION.md](MIGRATION.md) for migration guide
+> - See [Issue #186](https://github.com/apache/maven-verifier/issues/186) for discussion
+
 [![Apache License, Version 2.0, January 2004](https://img.shields.io/github/license/apache/maven.svg?label=License)][license]
 [![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven.shared/maven-verifier.svg?label=Maven%20Central)](https://search.maven.org/artifact/org.apache.maven.shared/maven-verifier)
 [![Reproducible Builds](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jvm-repo-rebuild/reproducible-central/master/content/org/apache/maven/shared/maven-verifier/badge.json)](https://github.com/jvm-repo-rebuild/reproducible-central/blob/master/content/org/apache/maven/shared/maven-verifier/README.md)

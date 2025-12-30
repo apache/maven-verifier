@@ -23,8 +23,15 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
+ * Interface for Maven launcher implementations.
+ *
  * @author Benjamin Bentmann
+ * @deprecated This interface is deprecated. Use
+ *             <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a>'s
+ *             {@code Executor} interface instead.
+ *             See <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>.
  */
+@Deprecated
 interface MavenLauncher {
 
     int run(String[] cliArgs, Properties systemProperties, String workingDirectory, File logFile)

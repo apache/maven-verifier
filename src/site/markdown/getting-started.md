@@ -19,6 +19,15 @@
 
 # Getting Started
 
+> **⚠️ DEPRECATION NOTICE**
+>
+> **This project is deprecated and will be replaced by [maven-executor](https://github.com/apache/maven/tree/master/impl/maven-executor).**
+>
+> - **New projects**: Please use maven-executor instead
+> - **Existing projects**: Please plan migration to maven-executor  
+> - See [Migration Guide](https://github.com/apache/maven-verifier/blob/master/MIGRATION.md)
+> - See [Issue #186](https://github.com/apache/maven-verifier/issues/186) for discussion
+
 ## Overview
 
 Using the `Verifier` consists out of three different phases
