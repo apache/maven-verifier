@@ -79,9 +79,49 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
+ * Maven test harness for integration tests.
+ *
+ * <p><strong>DEPRECATION NOTICE:</strong> This class is deprecated and will be removed in a future version.
+ * Please migrate to
+ * <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a>
+ * which provides a unified, modern API for programmatic Maven execution with support for both
+ * Maven 3.9+ and Maven 4+.</p>
+ *
+ * <p>Benefits of maven-executor:</p>
+ * <ul>
+ *   <li>Unified API that doesn't require updates when Maven CLI changes</li>
+ *   <li>Support for both forked and embedded execution modes</li>
+ *   <li>Dependency-less design</li>
+ *   <li>Better environment isolation</li>
+ *   <li>Transparent support for Maven 3.9+ and Maven 4+</li>
+ * </ul>
+ *
+ * <p>Migration example:</p>
+ * <pre>{@code
+ * // Old (maven-verifier):
+ * Verifier verifier = new Verifier("/path/to/project");
+ * verifier.addCliArgument("package");
+ * verifier.execute();
+ * verifier.verifyErrorFreeLog();
+ *
+ * // New (maven-executor):
+ * Executor executor = new ForkedExecutor();
+ * ExecutorRequest request = ExecutorRequest.builder()
+ *     .cwd(Paths.get("/path/to/project"))
+ *     .arguments(List.of("package"))
+ *     .build();
+ * int exitCode = executor.execute(request);
+ * assertEquals(0, exitCode);
+ * }</pre>
+ *
+ * @see <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>
+ * @see <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a>
  * @author Jason van Zyl
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ * @deprecated Use <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a> instead.
+ *             See <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>.
  */
+@Deprecated
 public class Verifier {
     private static final String LOG_FILENAME = "log.txt";
 

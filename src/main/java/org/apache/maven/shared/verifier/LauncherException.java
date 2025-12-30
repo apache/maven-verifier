@@ -19,8 +19,14 @@
 package org.apache.maven.shared.verifier;
 
 /**
+ * Exception thrown when Maven launcher encounters an error.
+ *
  * @author Benjamin Bentmann
+ * @deprecated This exception is deprecated along with the MavenLauncher interface.
+ *             When migrating to maven-executor, use standard Java exceptions.
+ *             See <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>.
  */
+@Deprecated
 class LauncherException extends Exception {
     /**
      *

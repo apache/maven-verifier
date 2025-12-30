@@ -32,8 +32,18 @@ import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.shared.utils.io.IOUtil;
 
 /**
- *  TODO this can be replaced with plexus-archiver
+ * Utility for extracting test resources.
+ *
+ * <p><strong>Note:</strong> This utility class provides functionality independent of
+ * Maven execution and could potentially be extracted to a separate, non-deprecated
+ * utility library if there is community interest.</p>
+ *
+ * @deprecated This class is deprecated as part of maven-verifier deprecation.
+ *             The resource extraction functionality may be moved to a separate utility
+ *             library in the future. For now, users should copy this utility if needed.
+ *             See <a href="https://github.com/apache/maven-verifier/issues/186">Issue #186</a>.
  */
+@Deprecated
 public class ResourceExtractor {
 
     public static File simpleExtractResources(Class<?> cl, String resourcePath) throws IOException {

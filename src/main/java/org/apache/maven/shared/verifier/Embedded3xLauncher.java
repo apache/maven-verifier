@@ -40,7 +40,12 @@ import org.apache.maven.shared.utils.io.IOUtil;
  * Launches an embedded Maven 3.x instance from some Maven installation directory.
  *
  * @author Benjamin Bentmann
+ * @deprecated This class is deprecated. Use
+ *             <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a>'s
+ *             {@code EmbeddedExecutor} instead.
+ *             See <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>.
  */
+@Deprecated
 class Embedded3xLauncher implements MavenLauncher {
 
     private final Object mavenCli;
