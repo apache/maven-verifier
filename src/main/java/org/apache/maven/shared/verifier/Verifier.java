@@ -172,6 +172,8 @@ public class Verifier {
 
     private String mavenHome;
 
+    private String mvnExecutable;
+
     // will launch mvn with -X
     private boolean mavenDebug = false;
 
@@ -325,62 +327,6 @@ public class Verifier {
         setSettingsFile(settingsFile);
         setDefaultCliArguments(defaultCliArguments);
         setMavenHome(mavenHome);
-    }
-
-    /**
-     * Builder for creating {@link Verifier} instances with explicit configuration.
-     * <p>
-     * When {@link #localRepository(String)} is set, the local repository is pre-populated
-     * before {@code findLocalRepo()} runs, so the system property
-     * {@code maven.repo.local} is never consulted. This eliminates the race condition that
-     * occurs when multiple {@code Verifier} instances are constructed concurrently in the
-     * same JVM while {@link Embedded3xLauncher#run} is manipulating the JVM-global system
-     * properties table ({@code System.setProperties(null)}).
-     */
-    public static class Builder {
-        private final String basedir;
-        private String settingsFile;
-        private String localRepository;
-
-        public Builder(String basedir) {
-            this.basedir = basedir;
-        }
-
-        public Builder settingsFile(String settingsFile) {
-            this.settingsFile = settingsFile;
-            return this;
-        }
-
-        /**
-         * Sets the local repository path explicitly.
-         * When provided, the system property {@code maven.repo.local} and the settings file
-         * are both bypassed for local repository resolution, making construction race-free.
-         */
-        public Builder localRepository(String localRepository) {
-            this.localRepository = localRepository;
-            return this;
-        }
-
-        public Verifier build() throws VerificationException {
-            return new Verifier(this);
-        }
-    }
-
-    private Verifier(Builder builder) throws VerificationException {
-        this.basedir = builder.basedir;
-        this.forkMode = System.getProperty("verifier.forkMode");
-        // Pre-set localRepo before findLocalRepo() so that the settings-file and
-        // system-property lookups in findLocalRepo() are both skipped when an
-        // explicit value has been provided via the builder.
-        this.localRepo = builder.localRepository;
-        if (builder.settingsFile != null) {
-            this.settingsFile = builder.settingsFile;
-        }
-        findLocalRepo(this.settingsFile);
-        this.mavenHome = System.getProperty("maven.home");
-        setForkMode();
-        useWrapper = Files.exists(Paths.get(getBasedir(), "mvnw"));
-        this.defaultCliArguments = DEFAULT_CLI_ARGUMENTS.clone();
     }
 
     public void setLocalRepo(String localRepo) {
@@ -1681,5 +1627,92 @@ public class Verifier {
         if ((mavenHome == null || mavenHome.isEmpty()) && (forkMode == null || forkMode.isEmpty())) {
             forkMode = "auto";
         }
+    }
+
+    /**
+     * Builder for creating {@link Verifier} instances with explicit configuration.
+     * <p>
+     * When {@link #localRepository(String)} is set, the local repository is pre-populated
+     * before {@code findLocalRepo()} runs, so the system property
+     * {@code maven.repo.local} is never consulted. This eliminates the race condition that
+     * occurs when multiple {@code Verifier} instances are constructed concurrently in the
+     * same JVM while {@link Embedded3xLauncher#run} is manipulating the JVM-global system
+     * properties table ({@code System.setProperties(null)}).
+     */
+    public static class Builder {
+        private final String basedir;
+        private String settingsFile;
+        private String localRepository;
+        private String forkMode;
+        private Boolean forkJvm;
+        private String mvnExecutable;
+
+        public Builder(String basedir) {
+            this.basedir = basedir;
+        }
+
+        public Builder settingsFile(String settingsFile) {
+            this.settingsFile = settingsFile;
+            return this;
+        }
+
+        /**
+         * Sets the local repository path explicitly.
+         * When provided, the system property {@code maven.repo.local} and the settings file
+         * are both bypassed for local repository resolution, making construction race-free.
+         */
+        public Builder localRepository(String localRepository) {
+            this.localRepository = localRepository;
+            return this;
+        }
+
+        /**
+         * Sets the forkMode explicitly.
+         * When provided, the system property verifier.forkMode is bypassed.
+         */
+        public Builder forkMode(String forkMode) {
+            this.forkMode = forkMode;
+            return this;
+        }
+
+        /**
+         * Sets the forkJvm explicitly.
+         */
+        public Builder forkJvm(Boolean forkJvm) {
+            this.forkJvm = forkJvm;
+            return this;
+        }
+
+        /**
+         * Sets the maven full path executable explicitly.
+         * When provided, the maven executable is used directly without any lookup or resolution.
+         */
+        public Builder mvnExecutable(String mvnExecutable) {
+            this.mvnExecutable = mvnExecutable;
+            return this;
+        }
+
+        public Verifier build() throws VerificationException {
+            return new Verifier(this);
+        }
+    }
+
+    private Verifier(Builder builder) throws VerificationException {
+        this.basedir = builder.basedir;
+        this.forkMode = builder.forkMode == null ? System.getProperty("verifier.forkMode") : builder.forkMode;
+        setForkMode();
+        this.forkJvm = builder.forkJvm;
+        // Pre-set localRepo before findLocalRepo() so that the settings-file and
+        // system-property lookups in findLocalRepo() are both skipped when an
+        // explicit value has been provided via the builder.
+        this.localRepo = builder.localRepository;
+        if (builder.settingsFile != null) {
+            this.settingsFile = builder.settingsFile;
+        }
+        findLocalRepo(this.settingsFile);
+        this.mavenHome = System.getProperty("maven.home");
+        this.useWrapper = Files.exists(Paths.get(getBasedir(), "mvnw"));
+        this.defaultCliArguments = DEFAULT_CLI_ARGUMENTS.clone();
+        this.mvnExecutable = builder.mvnExecutable;
     }
 }
