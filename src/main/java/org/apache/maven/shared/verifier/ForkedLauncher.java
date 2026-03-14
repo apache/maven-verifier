@@ -74,7 +74,7 @@ class ForkedLauncher implements MavenLauncher {
             String mavenHome, Map<String, String> envVars, boolean debugJvm, boolean wrapper, String mvnExecutable) {
         this.mavenHome = mavenHome;
         this.envVars = envVars;
-        if (mvnExecutable != null) {
+        if (mvnExecutable != null && !mvnExecutable.isEmpty()) {
             executable = mvnExecutable;
         } else {
             if (wrapper) {
@@ -127,10 +127,8 @@ class ForkedLauncher implements MavenLauncher {
 
         cmd.setWorkingDirectory(workingDirectory);
 
-        for (Object o : systemProperties.keySet()) {
-            String key = (String) o;
-            String value = systemProperties.getProperty(key);
-            cmd.createArg().setValue("-D" + key + "=" + value);
+        for (Map.Entry entry : systemProperties.entrySet()) {
+            cmd.createArg().setValue("-D" + entry.getKey() + "=" + entry.getValue());
         }
 
         for (String cliArg : cliArgs) {
