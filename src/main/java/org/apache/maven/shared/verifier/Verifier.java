@@ -1222,7 +1222,7 @@ public class Verifier {
 
             return embeddedLauncher;
         } else {
-            return new ForkedLauncher(mavenHome, envVars, debugJvm, useWrapper);
+            return new ForkedLauncher(mavenHome, envVars, debugJvm, useWrapper, mvnExecutable);
         }
     }
 
@@ -1646,6 +1646,7 @@ public class Verifier {
         private String forkMode;
         private Boolean forkJvm;
         private String mvnExecutable;
+        private String[] defaultCliArguments;
 
         public Builder(String basedir) {
             this.basedir = basedir;
@@ -1692,6 +1693,14 @@ public class Verifier {
             return this;
         }
 
+        /**
+         * Sets the default CLI arguments to be used for every execution
+         */
+        public Builder defaultCliArguments(String[] defaultCliArguments) {
+            this.defaultCliArguments = defaultCliArguments;
+            return this;
+        }
+
         public Verifier build() throws VerificationException {
             return new Verifier(this);
         }
@@ -1712,7 +1721,8 @@ public class Verifier {
         findLocalRepo(this.settingsFile);
         this.mavenHome = System.getProperty("maven.home");
         this.useWrapper = Files.exists(Paths.get(getBasedir(), "mvnw"));
-        this.defaultCliArguments = DEFAULT_CLI_ARGUMENTS.clone();
+        this.defaultCliArguments =
+                builder.defaultCliArguments == null ? DEFAULT_CLI_ARGUMENTS.clone() : builder.defaultCliArguments;
         this.mvnExecutable = builder.mvnExecutable;
     }
 }
