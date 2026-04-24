@@ -67,29 +67,37 @@ class ForkedLauncher implements MavenLauncher {
     }
 
     ForkedLauncher(String mavenHome, Map<String, String> envVars, boolean debugJvm, boolean wrapper) {
+        this(mavenHome, envVars, debugJvm, wrapper, null);
+    }
+
+    ForkedLauncher(
+            String mavenHome, Map<String, String> envVars, boolean debugJvm, boolean wrapper, String mvnExecutable) {
         this.mavenHome = mavenHome;
         this.envVars = envVars;
-
-        if (wrapper) {
-            final StringBuilder script = new StringBuilder();
-
-            if (!isWindows()) {
-                script.append("./");
-            }
-
-            script.append("mvnw");
-
-            if (debugJvm) {
-                script.append("Debug");
-            }
-            executable = script.toString();
+        if (mvnExecutable != null && !mvnExecutable.isEmpty()) {
+            executable = mvnExecutable;
         } else {
-            String script = "mvn" + (debugJvm ? "Debug" : "");
+            if (wrapper) {
+                final StringBuilder script = new StringBuilder();
 
-            if (mavenHome != null) {
-                executable = new File(mavenHome, "bin/" + script).getPath();
+                if (!isWindows()) {
+                    script.append("./");
+                }
+
+                script.append("mvnw");
+
+                if (debugJvm) {
+                    script.append("Debug");
+                }
+                executable = script.toString();
             } else {
-                executable = script;
+                String script = "mvn" + (debugJvm ? "Debug" : "");
+
+                if (mavenHome != null) {
+                    executable = new File(mavenHome, "bin/" + script).getPath();
+                } else {
+                    executable = script;
+                }
             }
         }
     }
@@ -119,10 +127,8 @@ class ForkedLauncher implements MavenLauncher {
 
         cmd.setWorkingDirectory(workingDirectory);
 
-        for (Object o : systemProperties.keySet()) {
-            String key = (String) o;
-            String value = systemProperties.getProperty(key);
-            cmd.createArg().setValue("-D" + key + "=" + value);
+        for (Map.Entry entry : systemProperties.entrySet()) {
+            cmd.createArg().setValue("-D" + entry.getKey() + "=" + entry.getValue());
         }
 
         for (String cliArg : cliArgs) {
