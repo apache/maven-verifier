@@ -146,6 +146,12 @@
       <version>1.9.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-util</artifactId>
+      <version>1.9.0</version>
+      <scope>test</scope>
+    </dependency>
     <!-- END transitive dependencies of embedder -->
   </dependencies>
 
