@@ -26,8 +26,9 @@ import java.util.Properties;
  * Interface for Maven launcher implementations.
  *
  * @author Benjamin Bentmann
- * @deprecated This interface is deprecated. Use
- *             <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a>'s
+ * @deprecated This interface is deprecated; this project will be retired soon. Use
+ *             <a href="https://github.com/apache/maven-executor">maven-executor</a>'s
+ *             ({@code org.apache.maven.executor:maven-executor})
  *             {@code Executor} interface instead.
  *             See <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>.
  */

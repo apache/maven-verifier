@@ -21,10 +21,11 @@
 
 <div class="alert alert-warning" role="alert">
   <h4>⚠️ Deprecation Notice</h4>
-  <p><strong>This project is deprecated and will be replaced by <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a>.</strong></p>
+  <p><strong>This project is deprecated. <a href="https://github.com/apache/maven-executor">maven-executor</a> is released and externalized as its own repository.</strong></p>
   <ul>
     <li><strong>New projects:</strong> Please use maven-executor instead</li>
     <li><strong>Existing projects:</strong> Please plan migration to maven-executor</li>
+    <li><strong>Retirement:</strong> This project will be retired soon</li>
     <li>See <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a></li>
     <li>See <a href="https://github.com/apache/maven-verifier/issues/186">Issue #186</a> for discussion</li>
   </ul>

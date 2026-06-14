@@ -81,9 +81,10 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Maven test harness for integration tests.
  *
- * <p><strong>DEPRECATION NOTICE:</strong> This class is deprecated and will be removed in a future version.
+ * <p><strong>DEPRECATION NOTICE:</strong> This class is deprecated and this project will be retired soon.
  * Please migrate to
- * <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a>
+ * <a href="https://github.com/apache/maven-executor">maven-executor</a>
+ * ({@code org.apache.maven.executor:maven-executor}),
  * which provides a unified, modern API for programmatic Maven execution with support for both
  * Maven 3.9+ and Maven 4+.</p>
  *
@@ -104,21 +105,25 @@ import org.xml.sax.helpers.DefaultHandler;
  * verifier.execute();
  * verifier.verifyErrorFreeLog();
  *
- * // New (maven-executor):
- * Executor executor = new ForkedExecutor();
- * ExecutorRequest request = ExecutorRequest.builder()
- *     .cwd(Paths.get("/path/to/project"))
- *     .arguments(List.of("package"))
- *     .build();
- * int exitCode = executor.execute(request);
- * assertEquals(0, exitCode);
+ * // New (maven-executor) — groupId: org.apache.maven.executor, artifactId: maven-executor:
+ * Path mavenHome = Paths.get(System.getProperty("maven.home"));
+ * try (ExecutorHelper executor = ExecutorHelper.forMavenInstallation(mavenHome, ExecutorHelper.Mode.AUTO)) {
+ *     ExecutorRequest request = ExecutorRequest.mavenBuilder()
+ *         .cwd(Paths.get("/path/to/project"))
+ *         .arguments("package")
+ *         .build();
+ *     ExecutorResult result = executor.execute(request);
+ *     assertTrue(result.success());
+ * }
  * }</pre>
  *
  * @see <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>
- * @see <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a>
+ * @see <a href="https://github.com/apache/maven-executor">maven-executor</a>
  * @author Jason van Zyl
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- * @deprecated Use <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a> instead.
+ * @deprecated This project is deprecated and will be retired soon.
+ *             Use <a href="https://github.com/apache/maven-executor">maven-executor</a>
+ *             ({@code org.apache.maven.executor:maven-executor}) instead.
  *             See <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>.
  */
 @Deprecated
