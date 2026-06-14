@@ -44,9 +44,10 @@ import org.apache.maven.shared.utils.io.FileUtils;
  * Launcher implementation that forks a new JVM process to execute Maven.
  *
  * @author Benjamin Bentmann
- * @deprecated This class is deprecated. Use
- *             <a href="https://github.com/apache/maven/tree/master/impl/maven-executor">maven-executor</a>'s
- *             {@code ForkedExecutor} instead.
+ * @deprecated This class is deprecated; this project will be retired soon. Use
+ *             <a href="https://github.com/apache/maven-executor">maven-executor</a>'s
+ *             ({@code org.apache.maven.executor:maven-executor})
+ *             {@code ForkedMavenExecutor} instead.
  *             See <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>.
  */
 @Deprecated

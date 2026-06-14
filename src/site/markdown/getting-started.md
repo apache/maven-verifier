@@ -21,10 +21,11 @@
 
 > **⚠️ DEPRECATION NOTICE**
 >
-> **This project is deprecated and will be replaced by [maven-executor](https://github.com/apache/maven/tree/master/impl/maven-executor).**
+> **This project is deprecated. [maven-executor](https://github.com/apache/maven-executor) is released and externalized as its own repository.**
 >
 > - **New projects**: Please use maven-executor instead
 > - **Existing projects**: Please plan migration to maven-executor  
+> - **Retirement**: This project will be retired soon
 > - See [Migration Guide](https://github.com/apache/maven-verifier/blob/master/MIGRATION.md)
 > - See [Issue #186](https://github.com/apache/maven-verifier/issues/186) for discussion
 

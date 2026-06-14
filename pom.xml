@@ -31,9 +31,9 @@
   <version>2.0.0-M2-SNAPSHOT</version>
 
   <name>Apache Maven Verifier Component (Deprecated)</name>
-  <description>[DEPRECATED] This component is deprecated and will be replaced by maven-executor.
-    New projects should use maven-executor (https://github.com/apache/maven/tree/master/impl/maven-executor).
-    Existing projects should plan migration. See https://github.com/apache/maven-verifier/issues/186
+  <description>[DEPRECATED] This component is deprecated.
+    maven-executor was released as its own repository (https://github.com/apache/maven-executor).
+    Existing projects should migrate soon. This project will be retired soon. See https://github.com/apache/maven-verifier/issues/186
 
     Provides a test harness for Maven integration tests.</description>
 

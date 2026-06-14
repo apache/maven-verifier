@@ -22,9 +22,9 @@ package org.apache.maven.shared.verifier;
  * Exception thrown when Maven verification fails.
  *
  * @author Jason van Zyl
- * @deprecated This exception is deprecated along with the Verifier class.
- *             When migrating to maven-executor, use standard Java exceptions
- *             and check executor exit codes directly.
+ * @deprecated This exception is deprecated along with the Verifier class; this project will be retired soon.
+ *             When migrating to maven-executor ({@code org.apache.maven.executor:maven-executor}), handle
+ *             {@code ExecutorException} and check {@code ExecutorResult.success()} directly.
  *             See <a href="https://github.com/apache/maven-verifier/blob/master/MIGRATION.md">Migration Guide</a>.
  */
 @Deprecated
