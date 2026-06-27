@@ -29,6 +29,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+@SuppressWarnings("deprecation")
 public class Embedded3xLauncherTest {
     @TempDir
     private Path temporaryDir;
