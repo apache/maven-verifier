@@ -26,8 +26,7 @@ import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("deprecation")
 public class Embedded3xLauncherTest {
@@ -54,9 +53,9 @@ public class Embedded3xLauncherTest {
 
         int exitCode = launcher.run(new String[] {"clean"}, new Properties(), workingDir, logFile.toFile());
 
-        assertThat(
-                "exit code unexpected, build log: " + System.lineSeparator() + new String(Files.readAllBytes(logFile)),
+        assertEquals(
+                0,
                 exitCode,
-                is(0));
+                "exit code unexpected, build log: " + System.lineSeparator() + new String(Files.readAllBytes(logFile)));
     }
 }

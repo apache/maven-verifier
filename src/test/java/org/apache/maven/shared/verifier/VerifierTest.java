@@ -38,12 +38,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.arrayContaining;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItemInArray;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -159,14 +154,15 @@ public class VerifierTest {
         verifier.executeGoal("test");
         verifier.resetStreams();
 
-        assertThat(
-                verifier.launcher.cliArgs,
-                arrayContaining(
-                        "-e",
-                        "--batch-mode",
-                        "-Dmaven.repo.local=test-local-repo",
-                        "org.apache.maven.plugins:maven-clean-plugin:clean",
-                        "test"));
+        assertArrayEquals(
+                new String[] {
+                    "-e",
+                    "--batch-mode",
+                    "-Dmaven.repo.local=test-local-repo",
+                    "org.apache.maven.plugins:maven-clean-plugin:clean",
+                    "test"
+                },
+                verifier.launcher.cliArgs);
     }
 
     @Test
@@ -177,14 +173,15 @@ public class VerifierTest {
         verifier.execute();
         verifier.resetStreams();
 
-        assertThat(
-                verifier.launcher.cliArgs,
-                arrayContaining(
-                        "-e",
-                        "--batch-mode",
-                        "-Dmaven.repo.local=test-local-repo",
-                        "org.apache.maven.plugins:maven-clean-plugin:clean",
-                        "test"));
+        assertArrayEquals(
+                new String[] {
+                    "-e",
+                    "--batch-mode",
+                    "-Dmaven.repo.local=test-local-repo",
+                    "org.apache.maven.plugins:maven-clean-plugin:clean",
+                    "test"
+                },
+                verifier.launcher.cliArgs);
     }
 
     public static Stream<Arguments> argumentsForTest() {
@@ -203,7 +200,7 @@ public class VerifierTest {
         verifier.executeGoal("test");
         verifier.resetStreams();
 
-        assertThat(verifier.launcher.cliArgs, hasItemInArray(expectedArgument));
+        assertTrue(Arrays.asList(verifier.launcher.cliArgs).contains(expectedArgument));
     }
 
     @Test
@@ -214,7 +211,8 @@ public class VerifierTest {
         verifier.executeGoal("test");
         verifier.resetStreams();
 
-        assertThat(verifier.launcher.cliArgs, allOf(hasItemInArray("cliArg1"), hasItemInArray("cliArg2")));
+        List<String> cliArgs = Arrays.asList(verifier.launcher.cliArgs);
+        assertTrue(cliArgs.contains("cliArg1") && cliArgs.contains("cliArg2"));
     }
 
     @Test
@@ -238,7 +236,7 @@ public class VerifierTest {
             verifier.execute();
             List<String> logs = Files.readAllLines(tmp.toPath());
 
-            assertThat("Maven logs not in log file", logs, hasItem(containsString("BUILD SUCCESS")));
+            assertTrue(logs.stream().anyMatch(line -> line.contains("BUILD SUCCESS")), "Maven logs not in log file");
         } finally {
             Files.deleteIfExists(tmp.toPath());
         }

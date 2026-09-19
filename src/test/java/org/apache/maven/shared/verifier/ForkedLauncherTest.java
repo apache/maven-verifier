@@ -32,8 +32,7 @@ import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings("deprecation")
@@ -56,7 +55,7 @@ public class ForkedLauncherTest {
         // most likely this contains the exception in case exitCode != 0
         expectFileLine(logFile, "Hello World");
 
-        assertThat("exit code", exitCode, is(0));
+        assertEquals(0, exitCode, "exit code");
     }
 
     @Test
@@ -69,7 +68,7 @@ public class ForkedLauncherTest {
         // most likely this contains the exception in case exitCode != 0
         expectFileLine(logFile, "Hello World");
 
-        assertThat("exit code", exitCode, is(0));
+        assertEquals(0, exitCode, "exit code");
     }
 
     static void expectFileLine(Path file, String expectedline) throws IOException {
