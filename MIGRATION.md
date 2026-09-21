@@ -40,6 +40,8 @@ Both have issues:
 - ❌ No unified approach for Maven 3 and Maven 4 support
 - ❌ Time-consuming to maintain
 
+The concrete failure that forced this migration: maven-verifier 2.0.0-M1's embedded mode (`Embedded3xLauncher`) locates the Maven CLI by reflection and invokes `MavenCli.doMain(String[], String, PrintStream, PrintStream)`. Maven 4 replaced `MavenCli` with `MavenCling`, so embedded mode fails on Maven 4 with a `NoSuchMethodException`. maven-executor's `EmbeddedMavenExecutor` detects the Maven version instead and supports both Maven 3.9+ and Maven 4.
+
 ### Benefits of maven-executor
 
 - ✅ **Unified API**: Single, simple API without need for changes when CLI changes
@@ -67,7 +69,7 @@ Both have issues:
 <dependency>
   <groupId>org.apache.maven.executor</groupId>
   <artifactId>maven-executor</artifactId>
-  <version>x.y.z</version> <!-- Use the latest released version from https://github.com/apache/maven-executor -->
+  <version>1.0.0</version> <!-- Released 2026-06-15; check https://github.com/apache/maven-executor/releases for newer releases -->
   <scope>test</scope>
 </dependency>
 ```
@@ -114,6 +116,8 @@ import org.apache.maven.executor.ExecutorResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MyTest {
     @Test
@@ -164,11 +168,17 @@ try (EmbeddedMavenExecutor executor = new EmbeddedMavenExecutor(mavenHome)) { ..
 | `verifier.setAutoclean(false)` | Manage clean goal manually in the arguments list |
 | `verifier.setForkJvm(true)` | `new ForkedMavenExecutor(mavenHome)` or `Mode.FORKED` |
 | `verifier.setForkJvm(false)` | `new EmbeddedMavenExecutor(mavenHome)` or `Mode.EMBEDDED` |
-| `verifier.execute()` | `executor.execute(request)` → returns `ExecutorResult` |
-| `verifier.verifyErrorFreeLog()` | `result.success()` returns `true` when exit code is 0 |
-| `result exit code` | `result.exitCode()` returns `Optional<Integer>` |
+| `verifier.execute()` | `executor.execute(request)` → returns `ExecutorResult`. Unlike `Verifier.execute()`, which throws `VerificationException` on a non-zero exit code, `executor.execute(request)` throws `ExecutorException` only for an execution failure (I/O error, timeout, interruption); a failed build returns normally with `result.success() == false`. Check `result.success()` explicitly, or throw yourself as shown in [Example Adapter Pattern](#example-adapter-pattern) below, to replicate the Verifier's throw-on-failure behavior |
+| `verifier.verifyErrorFreeLog()` | No direct equivalent; `result.success()` only proves the exit code was zero, not that the log is free of `[ERROR]` lines. Use `.grabOutputAsString(true)`, then assert neither `result.stdOutString()` nor `result.stdErrString()` contains `[ERROR]` |
 | `verifier.verifyFilePresent(path)` | `Files.exists(baseDir.resolve(path))` |
-| `verifier.verifyTextInLog(text)` | `result.stdOutString().orElse("").contains(text)` (requires `.grabOutputAsString(true)`) |
+| `verifier.verifyTextInLog(text)` | Check whether `result.stdOutString()` or `result.stdErrString()` contains `text` (requires `.grabOutputAsString(true)`). The Verifier log merges stdout and stderr into one file; the executor keeps them separate, so check both |
+| `verifier.setSystemProperty(key, value)` / `setSystemProperties(props)` | In forked mode, `.argument("-D" + key + "=" + value)` — these become Maven user properties, the same as the Verifier's forked launcher passing them as `-Dkey=value` CLI arguments. **Not** `.jvmSystemProperty()`: `ForkedMavenExecutor` appends `jvmSystemProperties` to `MAVEN_OPTS`, making them JVM system properties of the forked Maven process rather than user properties |
+| `verifier.setLocalRepo(path)` | `.argument("-Dmaven.repo.local=" + path)` |
+| `verifier.setLogFileName(name)` / `getLogFileName()` | The executor writes no log file by default. Use `.stdOut(Files.newOutputStream(baseDir.resolve("log.txt")))` and `.stdErr(...)` (the same or a separate stream), or `.grabOutputAsString(true)` and write `result.stdOutString()` / `result.stdErrString()` yourself |
+
+`result.exitCode()` returns `Optional<Integer>` with the Maven process exit code, if you need the raw value instead of `result.success()`.
+
+`Mode.AUTO` (`ExecutorHelperImpl.getExecutorByRequest`) selects `FORKED` whenever the request sets environment variables or JVM arguments, and `EMBEDDED` otherwise.
 
 ### 4. Environment Variables
 
@@ -194,22 +204,28 @@ maven-verifier included many helper methods like `verifyFilePresent()`, `verifyT
 These are not part of maven-executor's core responsibility.
 
 **Capturing output and verifying log content:**
+
+The Verifier writes a single merged `log.txt`; maven-executor keeps stdout and stderr separate, so an equivalent of `verifyErrorFreeLog()` must check both streams.
+
 ```java
 ExecutorRequest request = ExecutorRequest.mavenBuilder()
         .cwd(baseDir)
         .arguments("package")
-        .grabOutputAsString(true) // captures stdout as a String in ExecutorResult
+        .grabOutputAsString(true) // captures stdout and stderr as strings in ExecutorResult
         .build();
 
 ExecutorResult result = executor.execute(request);
 
-// Check build success
+// execute() does not throw on a failed build, only on an execution failure
+// (I/O error, timeout, interruption), so check success() explicitly
 assertTrue(result.success(), "Build should succeed");
 
 // Check log content
-String output = result.stdOutString().orElse("");
-assertTrue(output.contains("BUILD SUCCESS"), "Expected BUILD SUCCESS in output");
-assertFalse(output.contains("[ERROR]"), "Expected no errors in output");
+String stdOut = result.stdOutString().orElse("");
+String stdErr = result.stdErrString().orElse("");
+assertTrue(stdOut.contains("BUILD SUCCESS"), "Expected BUILD SUCCESS in output");
+assertFalse(stdOut.contains("[ERROR]"), "Expected no errors in stdout");
+assertFalse(stdErr.contains("[ERROR]"), "Expected no errors in stderr");
 ```
 
 **File existence checks:**
@@ -225,7 +241,7 @@ assertFalse(Files.exists(baseDir.resolve("target/should-not-exist.txt")),
 **Before:**
 ```java
 verifier.setLocalRepo("/custom/repo");
-verifier.setUserSettingsFile("/path/to/settings.xml");
+verifier.setSettingsFile("/path/to/settings.xml");
 ```
 
 **After:**
@@ -239,6 +255,8 @@ ExecutorRequest request = ExecutorRequest.mavenBuilder()
         )
         .build();
 ```
+
+**Artifact helper methods have no equivalent.** `verifier.deleteArtifacts(...)`, `verifier.verifyArtifactPresent(...)`, and `verifier.getArtifactPath(...)` are not part of maven-executor. Compute the path yourself from the local repository: `<localRepo>/<groupId with dots replaced by slashes>/<artifactId>/<version>/`. Do not pull in `ToolboxExecutorTool` for this: it runs a third-party plugin (`eu.maveniverse.maven.plugins:toolbox`) through the Maven under test to compute the same paths — see [maven-executor issue #44](https://github.com/apache/maven-executor/issues/44).
 
 ## Migration Checklist
 
