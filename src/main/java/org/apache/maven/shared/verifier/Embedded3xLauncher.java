@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -37,7 +38,7 @@ import java.util.Properties;
 import org.apache.maven.shared.utils.io.IOUtil;
 
 /**
- * Launches an embedded Maven 3.x instance from some Maven installation directory.
+ * Launches an embedded Maven 3.x or 4.x instance from some Maven installation directory.
  *
  * @author Benjamin Bentmann
  * @deprecated This class is deprecated; this project will be retired soon. Use
@@ -49,13 +50,27 @@ import org.apache.maven.shared.utils.io.IOUtil;
 @Deprecated
 class Embedded3xLauncher implements MavenLauncher {
 
+    private final Class<?> cliClass;
+
+    /** Maven 3: the {@code MavenCli} instance; null for Maven 4. */
     private final Object mavenCli;
 
+    /** Maven 3: {@code MavenCli.doMain(String[], String, PrintStream, PrintStream)}; null for Maven 4. */
     private final Method doMain;
 
-    private Embedded3xLauncher(Object mavenCli, Method doMain) {
+    /** Maven 4: the {@code ClassWorld} the launcher was configured with; null for Maven 3. */
+    private final Object classWorld;
+
+    /** Maven 4: {@code MavenCling.main(String[], ClassWorld, InputStream, OutputStream, OutputStream)}. */
+    private final Method embeddedMain;
+
+    private Embedded3xLauncher(
+            Class<?> cliClass, Object mavenCli, Method doMain, Object classWorld, Method embeddedMain) {
+        this.cliClass = cliClass;
         this.mavenCli = mavenCli;
         this.doMain = doMain;
+        this.classWorld = classWorld;
+        this.embeddedMain = embeddedMain;
     }
 
     /**
@@ -95,13 +110,20 @@ class Embedded3xLauncher implements MavenLauncher {
             Method getMainClass = launcherClass.getMethod("getMainClass");
             Class<?> cliClass = (Class<?>) getMainClass.invoke(launcher);
 
-            Constructor<?> newMavenCli = cliClass.getConstructor(new Class[] {classWorld.getClass()});
+            Class<?> classWorldClass = bootLoader.loadClass("org.codehaus.plexus.classworlds.ClassWorld");
+            Method embeddedMain = findEmbeddedMain(cliClass, classWorldClass);
+            if (embeddedMain != null) {
+                // Maven 4: MavenCling has no doMain, but a static entry point that takes the streams
+                return new Embedded3xLauncher(cliClass, null, null, classWorld, embeddedMain);
+            }
+
+            Constructor<?> newMavenCli = cliClass.getConstructor(new Class[] {classWorldClass});
             Object mavenCli = newMavenCli.newInstance(new Object[] {classWorld});
 
             Class<?>[] parameterTypes = {String[].class, String.class, PrintStream.class, PrintStream.class};
             Method doMain = cliClass.getMethod("doMain", parameterTypes);
 
-            return new Embedded3xLauncher(mavenCli, doMain);
+            return new Embedded3xLauncher(cliClass, mavenCli, doMain, null, null);
         } catch (ReflectiveOperationException | IOException e) {
             throw new LauncherException("Failed to initialize Laucher", e);
         } finally {
@@ -124,9 +146,22 @@ class Embedded3xLauncher implements MavenLauncher {
             Class<?>[] parameterTypes = {String[].class, String.class, PrintStream.class, PrintStream.class};
             Method doMain = cliClass.getMethod("doMain", parameterTypes);
 
-            return new Embedded3xLauncher(mavenCli, doMain);
+            return new Embedded3xLauncher(cliClass, mavenCli, doMain, null, null);
         } catch (ReflectiveOperationException e) {
             throw new LauncherException("Failed to initialize Laucher", e);
+        }
+    }
+
+    /**
+     * Returns Maven 4's {@code main(String[], ClassWorld, InputStream, OutputStream, OutputStream)}, or null when
+     * the main class is a Maven 3 {@code MavenCli}.
+     */
+    private static Method findEmbeddedMain(Class<?> cliClass, Class<?> classWorldClass) {
+        try {
+            return cliClass.getMethod(
+                    "main", String[].class, classWorldClass, InputStream.class, OutputStream.class, OutputStream.class);
+        } catch (NoSuchMethodException e) {
+            return null;
         }
     }
 
@@ -187,9 +222,15 @@ class Embedded3xLauncher implements MavenLauncher {
             }
 
             ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader(mavenCli.getClass().getClassLoader());
+            Thread.currentThread().setContextClassLoader(cliClass.getClassLoader());
             try {
-                Object result = doMain.invoke(mavenCli, new Object[] {cliArgs, workingDirectory, out, out});
+                Object result;
+                if (embeddedMain != null) {
+                    // Maven 4 takes the working directory from user.dir, set above
+                    result = embeddedMain.invoke(null, new Object[] {cliArgs, classWorld, null, out, out});
+                } else {
+                    result = doMain.invoke(mavenCli, new Object[] {cliArgs, workingDirectory, out, out});
+                }
 
                 return ((Number) result).intValue();
             } finally {
@@ -209,8 +250,7 @@ class Embedded3xLauncher implements MavenLauncher {
     public String getMavenVersion() throws LauncherException {
         Properties props = new Properties();
 
-        InputStream is =
-                mavenCli.getClass().getResourceAsStream("/META-INF/maven/org.apache.maven/maven-core/pom.properties");
+        InputStream is = cliClass.getResourceAsStream("/META-INF/maven/org.apache.maven/maven-core/pom.properties");
         if (is != null) {
             try {
                 props.load(is);

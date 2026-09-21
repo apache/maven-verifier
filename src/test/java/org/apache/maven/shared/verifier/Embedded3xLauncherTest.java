@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("deprecation")
 public class Embedded3xLauncherTest {
@@ -49,6 +50,11 @@ public class Embedded3xLauncherTest {
     }
 
     private void runLauncher(MavenLauncher launcher) throws Exception {
+        assertTrue(
+                launcher.getMavenVersion().startsWith("3.")
+                        || launcher.getMavenVersion().startsWith("4."),
+                "maven version");
+
         Path logFile = temporaryDir.resolve("build.log");
 
         int exitCode = launcher.run(new String[] {"clean"}, new Properties(), workingDir, logFile.toFile());
