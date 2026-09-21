@@ -305,7 +305,7 @@ public class MavenExecutorAdapter implements AutoCloseable {
 
     public MavenExecutorAdapter(Path mavenHome, String baseDir) {
         this.baseDir = Paths.get(baseDir);
-        // Mode.AUTO selects embedded when possible, falls back to forked
+        // Mode.AUTO selects embedded unless the request sets environment variables or JVM arguments
         this.executor = ExecutorHelper.forMavenInstallation(mavenHome, ExecutorHelper.Mode.AUTO);
     }
 
