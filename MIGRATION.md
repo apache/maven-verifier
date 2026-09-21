@@ -258,6 +258,23 @@ ExecutorRequest request = ExecutorRequest.mavenBuilder()
 
 **Artifact helper methods have no equivalent.** `verifier.deleteArtifacts(...)`, `verifier.verifyArtifactPresent(...)`, and `verifier.getArtifactPath(...)` are not part of maven-executor. Compute the path yourself from the local repository: `<localRepo>/<groupId with dots replaced by slashes>/<artifactId>/<version>/`. Do not pull in `ToolboxExecutorTool` for this: it runs a third-party plugin (`eu.maveniverse.maven.plugins:toolbox`) through the Maven under test to compute the same paths — see [maven-executor issue #44](https://github.com/apache/maven-executor/issues/44).
 
+### 7. Lessons from migrated projects
+
+These came up in every port of a Maven integration-test suite (maven-ear-plugin, maven-remote-resources-plugin, maven-apache-resources, maven-surefire, maven-build-cache-extension, and the Maven 3.x core ITs):
+
+- **Forward `maven.home` to the forked test JVM.** `Verifier` fell back to the `mvn` on `PATH` when `maven.home` was unset; maven-executor requires the property (`ExecutorRequest.discoverInstallationDirectory()` throws otherwise), and a Surefire or Failsafe fork does not inherit it from the outer Maven. Add it to the plugin configuration:
+
+  ```xml
+  <systemPropertyVariables>
+    <maven.home>${maven.home}</maven.home>
+  </systemPropertyVariables>
+  ```
+
+- **`ResourceExtractor` has no equivalent.** `org.apache.maven.shared.verifier.util.ResourceExtractor` ships in this artifact only. Copy the test project from `src/test/resources` yourself, or keep a trimmed local copy of the class.
+- **Create the executor per test or per execution, not once per JVM.** `EmbeddedMavenExecutor` snapshots `System.getProperties()`, `System.out`, and `System.err` in its constructor and restores that snapshot after every `execute()`, so a static executor silently reverts any system property a test sets between two builds ([maven-executor issue #46](https://github.com/apache/maven-executor/issues/46)). `ExecutorHelper` is `AutoCloseable`; use try-with-resources.
+- **Do not hand one stream to both `stdOut()` and `stdErr()`.** `ForkedMavenExecutor` closes each stream it is given when its pump thread finishes, so a shared stream is closed twice from two threads ([maven-executor issue #45](https://github.com/apache/maven-executor/issues/45)). Use `grabOutputAsString(true)` and write the log file afterwards, or wrap the file stream so that `close()` is idempotent and `write()` is synchronized.
+- **Prefer forked mode for an extension under test.** A build extension loaded through `.mvn/extensions.xml` shares the embedded classloader across tests; forking gives each build a fresh JVM, which is what `Verifier` did by default.
+
 ## Migration Checklist
 
 - [ ] Review all usages of `Verifier` class in your codebase
@@ -268,6 +285,8 @@ ExecutorRequest request = ExecutorRequest.mavenBuilder()
 - [ ] Replace verification methods with standard Java file checks or custom utilities
 - [ ] Update environment variable configuration
 - [ ] Update local repository and settings configuration
+- [ ] Forward `maven.home` to the test JVM through `systemPropertyVariables`
+- [ ] Create executors per test or per execution, never as a static field
 - [ ] Test thoroughly with your integration test suite
 - [ ] Update documentation and comments
 
