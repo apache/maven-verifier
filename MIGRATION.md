@@ -162,7 +162,7 @@ try (EmbeddedMavenExecutor executor = new EmbeddedMavenExecutor(mavenHome)) { ..
 
 | maven-verifier Concept | maven-executor Equivalent |
 |------------------------|---------------------------|
-| `new Verifier(baseDir)` | `ExecutorRequest.mavenBuilder().cwd(baseDir).build()` |
+| `new Verifier(baseDir)` | `ExecutorRequest.mavenBuilder().cwd(baseDir).build()`. A built request cannot be changed; to run again with different arguments or properties, derive a new one with `request.toBuilder()` instead of reconfiguring the Verifier between runs |
 | `verifier.addCliArgument(arg)` | `.argument(arg)` or `.arguments(arg1, arg2, ...)` on the builder |
 | `verifier.setMavenDebug(true)` | Add `-X` to arguments |
 | `verifier.setAutoclean(false)` | Manage clean goal manually in the arguments list |
