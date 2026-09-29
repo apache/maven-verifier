@@ -19,13 +19,10 @@
 
 # Getting Started
 
-> **⚠️ DEPRECATION NOTICE**
+> **Note: This library is retired. It is no longer maintained.**
 >
-> **This project is deprecated. [maven-executor](https://github.com/apache/maven-executor) is released and externalized as its own repository.**
+> **Version 2.0.0 is the final release. Use [maven-executor](https://github.com/apache/maven-executor) instead.**
 >
-> - **New projects**: Please use maven-executor instead
-> - **Existing projects**: Please plan migration to maven-executor  
-> - **Retirement**: This project will be retired soon
 > - See [Migration Guide](https://github.com/apache/maven-verifier/blob/master/MIGRATION.md)
 > - See [Issue #186](https://github.com/apache/maven-verifier/issues/186) for discussion
 
