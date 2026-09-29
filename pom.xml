@@ -28,7 +28,7 @@
   </parent>
 
   <artifactId>maven-verifier</artifactId>
-  <version>2.0.0-M2-SNAPSHOT</version>
+  <version>2.0.0</version>
 
   <name>Apache Maven Verifier Component (RETIRED)</name>
   <description>[RETIRED] This component is retired. It is no longer maintained.
@@ -45,7 +45,7 @@
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-verifier.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-verifier.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>maven-verifier-2.0.0</tag>
     <url>https://github.com/apache/maven-verifier/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
@@ -67,7 +67,7 @@
     <javaVersion>8</javaVersion>
     <mavenVersion>3.9.16</mavenVersion>
     <mavenResolverVersion>1.9.27</mavenResolverVersion>
-    <project.build.outputTimestamp>2022-09-22T20:29:06Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-09-29T09:57:27Z</project.build.outputTimestamp>
   </properties>
 
   <dependencies>
