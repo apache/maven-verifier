@@ -16,7 +16,7 @@
 #
 # see https://s.apache.org/asfyaml
 github:
-  description: "Apache Maven Verifier (deprecated)"
+  description: "Apache Maven Verifier (RETIRED)"
   homepage: https://maven.apache.org/shared/maven-verifier/
   labels:
     - java
@@ -27,8 +27,6 @@ github:
     squash: true
     merge: false
     rebase: true
-  autolink_jira:
-    - MSHARED
   del_branch_on_merge: true
   features:
     issues: true
